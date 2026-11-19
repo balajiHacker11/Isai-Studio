@@ -31,6 +31,7 @@ object AudioFxBridge {
 
     private var equalizer: Equalizer? = null
 
+    @androidx.annotation.OptIn(UnstableApi::class)
     fun attachToAudioSession(audioSessionId: Int) {
         if (audioSessionId == C.AUDIO_SESSION_ID_UNSET || audioSessionId == 0) return
         runCatching {
