@@ -69,7 +69,7 @@ jobs:
           KEYSTORE_PATH: ${{ github.workspace }}/my-upload-key.jks
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: gradle :app:testDebugUnitTest :app:assembleRelease :app:bundleRelease --stacktrace
+        run: gradle :app:testDebugUnitTest :app:assembleRelease :app:bundleRelease --no-daemon --stacktrace
 
       - name: Upload Release APK & AAB Artifacts
         uses: actions/upload-artifact@v4
