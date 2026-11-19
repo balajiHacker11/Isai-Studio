@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">Isai Studio</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_library">Library</string>
+    <string name="nav_settings">Studio</string>
+    <string name="sign_in_title">Enter Isai Studio</string>
+    <string name="sign_in_subtitle">Sync your playlists, liked tracks, synced lyrics, and audio console settings with your Google account.</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="intro_skip">Skip Intro</string>
+    <string name="intro_enter_studio">Enter Studio</string>
+    <string name="intro_next">Next Story</string>
+    <string name="link_audio_title">Link Local Audio</string>
+    <string name="link_audio_hint">Select an MP3, AAC, FLAC, or M4A file from your device to play this track.</string>
+    <string name="bulk_link_audio">Auto-Match Local Audio Files</string>
+    <string name="search_placeholder">Search songs, films, BGMs, artists…</string>
+    <string name="empty_playlists">No playlists yet. Tap + to curate your first Sai Abhyankkar mix.</string>
+    <string name="empty_likes">Swipe right or double-tap any track cover to save it to Liked Songs.</string>
+    <string name="empty_history">Your listening history will appear here as you play tracks.</string>
+    <string name="empty_lyrics">No synced LRC lyrics attached yet. Tap Edit to paste LRC lines.</string>
+    <string name="cd_play">Play</string>
+    <string name="cd_pause">Pause</string>
+    <string name="cd_next">Next track</string>
+    <string name="cd_previous">Previous track</string>
+    <string name="cd_like">Toggle like</string>
+    <string name="cd_shuffle">Toggle shuffle</string>
+    <string name="cd_repeat">Cycle repeat mode</string>
+    <string name="cd_minimize">Minimize player</string>
+    <string name="cd_queue">Open queue</string>
+    <string name="cd_lyrics">Open synced lyrics</string>
+    <string name="cd_equalizer">Open equalizer</string>
+    <string name="cd_sleep_timer">Open sleep timer</string>
+    <string name="cd_more_options">More track options</string>
+    <string name="cd_back">Navigate back</string>
+</resources>
