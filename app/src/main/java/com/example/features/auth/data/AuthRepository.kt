@@ -1,5 +1,6 @@
 package com.example.features.auth.data
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.util.Log
@@ -8,7 +9,6 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
-import com.example.R
 import com.example.core.firebase.OperationType
 import com.example.core.firebase.handleFirestoreError
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -48,11 +48,8 @@ class AuthRepository(
         val existing = auth.currentUser
         if (existing != null) return Result.success(existing)
 
-        val clientId = try {
-            context.getString(R.string.default_web_client_id)
-        } catch (e: Exception) {
-            return Result.failure(e)
-        }
+        val clientId = resolveWebClientId(context)
+            ?: return Result.failure(IllegalStateException("Google Sign-In configuration missing."))
 
         return try {
             val credentialManager = CredentialManager.create(context)
@@ -81,11 +78,8 @@ class AuthRepository(
     }
 
     suspend fun signInInteractive(activity: Activity): Result<FirebaseUser> {
-        val clientId = try {
-            activity.getString(R.string.default_web_client_id)
-        } catch (e: Exception) {
-            return Result.failure(IllegalStateException("Google Sign-In configuration missing."))
-        }
+        val clientId = resolveWebClientId(activity)
+            ?: return Result.failure(IllegalStateException("Google Sign-In configuration missing."))
 
         return try {
             val credentialManager = CredentialManager.create(activity)
@@ -165,5 +159,18 @@ class AuthRepository(
                 auth.signOut()
             }
         }
+    }
+
+    @SuppressLint("DiscouragedApi")
+    private fun resolveWebClientId(context: Context): String? {
+        val resId = context.resources.getIdentifier(
+            "default_web_client_id",
+            "string",
+            context.packageName
+        )
+        if (resId == 0) return null
+        return runCatching { context.getString(resId) }
+            .getOrNull()
+            ?.takeIf { it.isNotBlank() }
     }
 }
