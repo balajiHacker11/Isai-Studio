@@ -15,11 +15,9 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CancellationException
@@ -27,29 +25,38 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class AuthRepository(
-    private val db: FirebaseFirestore,
-    private val auth: FirebaseAuth = Firebase.auth
+    private val db: FirebaseFirestore?,
+    private val auth: FirebaseAuth?
 ) {
-    fun authStateFlow(): Flow<FirebaseUser?> = callbackFlow {
-        val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
-            trySend(firebaseAuth.currentUser)
+    val isFirebaseConfigured: Boolean
+        get() = db != null && auth != null
+
+    fun authStateFlow(): Flow<FirebaseUser?> {
+        val firebaseAuth = auth ?: return flowOf(null)
+        return callbackFlow {
+            val listener = FirebaseAuth.AuthStateListener { a ->
+                trySend(a.currentUser)
+            }
+            firebaseAuth.addAuthStateListener(listener)
+            awaitClose { firebaseAuth.removeAuthStateListener(listener) }
         }
-        auth.addAuthStateListener(listener)
-        awaitClose { auth.removeAuthStateListener(listener) }
     }
 
-    fun currentUser(): FirebaseUser? = auth.currentUser
+    fun currentUser(): FirebaseUser? = auth?.currentUser
 
     suspend fun attemptSilentSignIn(context: Context): Result<FirebaseUser?> {
-        val existing = auth.currentUser
+        val firebaseAuth = auth ?: return Result.success(null)
+        if (db == null) return Result.success(null)
+        val existing = firebaseAuth.currentUser
         if (existing != null) return Result.success(existing)
 
         val clientId = resolveWebClientId(context)
-            ?: return Result.failure(IllegalStateException("Google Sign-In configuration missing."))
+            ?: return Result.success(null)
 
         return try {
             val credentialManager = CredentialManager.create(context)
@@ -64,7 +71,7 @@ class AuthRepository(
             val credential = credentialManager.getCredential(context, request).credential
             if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                 val token = GoogleIdTokenCredential.createFrom(credential.data).idToken
-                val result = auth.signInWithCredential(GoogleAuthProvider.getCredential(token, null)).await()
+                val result = firebaseAuth.signInWithCredential(GoogleAuthProvider.getCredential(token, null)).await()
                 result.user?.let { ensureUserProfile(it) }
                 Result.success(result.user)
             } else {
@@ -78,8 +85,20 @@ class AuthRepository(
     }
 
     suspend fun signInInteractive(activity: Activity): Result<FirebaseUser> {
+        val firebaseAuth = auth
+        if (firebaseAuth == null || db == null) {
+            return Result.failure(
+                IllegalStateException(
+                    "Firebase is not configured in this APK build. Include app/google-services.json (or set GOOGLE_SERVICES_JSON_BASE64 in GitHub Secrets) and rebuild."
+                )
+            )
+        }
         val clientId = resolveWebClientId(activity)
-            ?: return Result.failure(IllegalStateException("Google Sign-In configuration missing."))
+            ?: return Result.failure(
+                IllegalStateException(
+                    "Google Sign-In configuration missing (default_web_client_id). Include app/google-services.json in this build."
+                )
+            )
 
         return try {
             val credentialManager = CredentialManager.create(activity)
@@ -90,7 +109,7 @@ class AuthRepository(
             val credential = credentialManager.getCredential(activity, request).credential
             if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                 val token = GoogleIdTokenCredential.createFrom(credential.data).idToken
-                val authResult = auth.signInWithCredential(GoogleAuthProvider.getCredential(token, null)).await()
+                val authResult = firebaseAuth.signInWithCredential(GoogleAuthProvider.getCredential(token, null)).await()
                 val user = authResult.user ?: return Result.failure(IllegalStateException("Firebase user null after sign-in."))
                 ensureUserProfile(user)
                 Result.success(user)
@@ -109,9 +128,10 @@ class AuthRepository(
     }
 
     suspend fun ensureUserProfile(user: FirebaseUser): Result<Unit> {
+        val firestore = db ?: return Result.failure(IllegalStateException("Firestore unavailable"))
         val path = "users/${user.uid}"
         return try {
-            val docRef = db.collection("users").document(user.uid)
+            val docRef = firestore.collection("users").document(user.uid)
             val snapshot = docRef.get().await()
             val displayName = (user.displayName?.takeIf { it.isNotBlank() } ?: "Isai Listener").take(80)
             val email = (user.email ?: "").take(160)
@@ -156,7 +176,7 @@ class AuthRepository(
             } catch (e: Exception) {
                 Log.w("Auth", "Failed to clear credential state: ${e.message}")
             } finally {
-                auth.signOut()
+                auth?.signOut()
             }
         }
     }

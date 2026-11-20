@@ -1,6 +1,8 @@
 package com.example.features.auth.presentation
 
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -196,7 +198,14 @@ fun AuthScreen(
                     }
                 }
 
-                if (uiState.errorMessage != null) {
+                val firebaseMissing = !authViewModel.isFirebaseConfigured
+                val activeError = uiState.errorMessage ?: if (firebaseMissing) {
+                    "Firebase is not configured in this APK build. Add app/google-services.json (or set GOOGLE_SERVICES_JSON_BASE64 in GitHub Secrets) and rebuild to enable Google Sign-In."
+                } else {
+                    null
+                }
+
+                if (activeError != null) {
                     Spacer(Modifier.height(14.dp))
                     Surface(
                         color = MaterialTheme.colorScheme.error.copy(alpha = 0.16f),
@@ -204,7 +213,7 @@ fun AuthScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = uiState.errorMessage!!,
+                            text = activeError,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.padding(12.dp)
@@ -216,7 +225,7 @@ fun AuthScreen(
 
                 Button(
                     onClick = {
-                        val activity = context as? Activity
+                        val activity = context.findActivity()
                         if (activity != null) {
                             authViewModel.signInWithGoogle(activity)
                         }
@@ -264,4 +273,10 @@ fun AuthScreen(
             }
         }
     }
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }

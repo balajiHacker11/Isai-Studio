@@ -12,14 +12,32 @@ import com.example.features.catalog.data.CatalogRepository
 import com.example.features.library.data.LibraryRepository
 import com.example.features.player.data.LyricsRepository
 import com.example.features.settings.data.PreferencesRepository
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class AppContainer(context: Context) {
     private val appContext = context.applicationContext
 
-    val firestore: FirebaseFirestore by lazy {
+    private fun ensureFirebaseInitialized(): Boolean {
+        if (FirebaseApp.getApps(appContext).isNotEmpty()) return true
+        return runCatching { FirebaseApp.initializeApp(appContext) != null }.getOrDefault(false)
+    }
+
+    val isFirebaseConfigured: Boolean
+        get() = ensureFirebaseInitialized()
+
+    val firestore: FirebaseFirestore? by lazy {
+        if (!ensureFirebaseInitialized()) return@lazy null
         val databaseId = appContext.getString(R.string.firestore_database_id)
-        FirebaseFirestore.getInstance(databaseId)
+        runCatching { FirebaseFirestore.getInstance(databaseId) }.getOrNull()
+    }
+
+    val firebaseAuth: FirebaseAuth? by lazy {
+        if (!ensureFirebaseInitialized()) return@lazy null
+        runCatching { Firebase.auth }.getOrNull()
     }
 
     val catalogRepository: CatalogRepository by lazy {
@@ -35,19 +53,19 @@ class AppContainer(context: Context) {
     }
 
     val authRepository: AuthRepository by lazy {
-        AuthRepository(firestore)
+        AuthRepository(firestore, firebaseAuth)
     }
 
     val libraryRepository: LibraryRepository by lazy {
-        LibraryRepository(firestore)
+        LibraryRepository(firestore, firebaseAuth)
     }
 
     val lyricsRepository: LyricsRepository by lazy {
-        LyricsRepository(firestore)
+        LyricsRepository(firestore, firebaseAuth)
     }
 
     val preferencesRepository: PreferencesRepository by lazy {
-        PreferencesRepository(firestore)
+        PreferencesRepository(firestore, firebaseAuth)
     }
 
     val searchCatalogUseCase: SearchCatalogUseCase by lazy { SearchCatalogUseCase() }

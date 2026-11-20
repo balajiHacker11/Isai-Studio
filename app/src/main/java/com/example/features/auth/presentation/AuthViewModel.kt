@@ -26,6 +26,9 @@ class AuthViewModel(
     private val localAudioStore: LocalAudioStore
 ) : ViewModel() {
 
+    val isFirebaseConfigured: Boolean
+        get() = authRepository.isFirebaseConfigured
+
     val currentUser: StateFlow<FirebaseUser?> = authRepository.authStateFlow()
         .stateIn(
             scope = viewModelScope,
