@@ -83,20 +83,16 @@ class StartupCrashTest {
     }
 
     @Test
-    fun appContainerInitializesFirebaseRepositoriesWhenConfigured() {
+    fun appContainerInitializesFirebaseRepositoriesFromGoogleServicesJson() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        if (FirebaseApp.getApps(context).isEmpty()) {
-            FirebaseApp.initializeApp(
-                context,
-                FirebaseOptions.Builder()
-                    .setApplicationId("1:652501169590:android:984d0428e414405c4b3d17")
-                    .setApiKey("test-api-key")
-                    .setProjectId("gen-lang-client-0712803245")
-                    .build()
-            )
-        }
+        FirebaseApp.getApps(context).forEach { it.delete() }
+
+        val webClientResId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+        assertTrue("Expected default_web_client_id generated from app/google-services.json", webClientResId != 0)
+        assertTrue(context.getString(webClientResId).isNotBlank())
+
         val container = AppContainer(context)
-        assertTrue(container.isFirebaseConfigured)
+        assertTrue("Expected FirebaseApp to initialize from google-services.json resources", container.isFirebaseConfigured)
         assertNotNull(container.firestore)
         assertNotNull(container.firebaseAuth)
         assertTrue(container.authRepository.isFirebaseConfigured)
