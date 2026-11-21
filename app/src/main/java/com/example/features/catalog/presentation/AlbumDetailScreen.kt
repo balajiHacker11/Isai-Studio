@@ -150,7 +150,7 @@ fun AlbumDetailScreen(
                     ) {
                         Button(
                             onClick = {
-                                val firstPlayable = tracks.firstOrNull { linkedAudio.containsKey(it.id) } ?: tracks.firstOrNull()
+                                val firstPlayable = tracks.firstOrNull()
                                 if (firstPlayable != null) onPlayTrack(firstPlayable, tracks)
                             },
                             colors = ButtonDefaults.buttonColors(
@@ -167,7 +167,7 @@ fun AlbumDetailScreen(
                         OutlinedButton(
                             onClick = {
                                 val shuffled = tracks.shuffled()
-                                val firstPlayable = shuffled.firstOrNull { linkedAudio.containsKey(it.id) } ?: shuffled.firstOrNull()
+                                val firstPlayable = shuffled.firstOrNull()
                                 if (firstPlayable != null) onPlayTrack(firstPlayable, shuffled)
                             },
                             shape = RoundedCornerShape(14.dp)

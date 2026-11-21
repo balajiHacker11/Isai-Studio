@@ -16,6 +16,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import androidx.palette.graphics.Palette
+import com.example.core.local.LocalAudioStore
 import com.example.core.model.LinkedAudioEntry
 import com.example.core.model.Track
 import com.example.features.catalog.data.CatalogRepository
@@ -55,7 +56,8 @@ data class PlaybackSnapshot(
 @OptIn(UnstableApi::class)
 class PlaybackCoordinator(
     private val context: Context,
-    private val catalogRepository: CatalogRepository
+    private val catalogRepository: CatalogRepository,
+    private val localAudioStore: LocalAudioStore
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
@@ -77,6 +79,7 @@ class PlaybackCoordinator(
     private var normalizeVolumeEnabled: Boolean = false
     private var lastRecordedTrackId: Int? = null
     private val paletteCache = mutableMapOf<Int, Pair<Color, Color>>()
+    private var pendingPlayRequest: Triple<Track, List<Track>, Map<Int, LinkedAudioEntry>>? = null
 
     fun connect() {
         if (controllerFuture != null) return
@@ -90,6 +93,10 @@ class PlaybackCoordinator(
                 attachPlayerListener(controller)
                 syncFromPlayer(controller)
                 startProgressLoop()
+                pendingPlayRequest?.let { (track, contextTracks, linked) ->
+                    pendingPlayRequest = null
+                    playTrack(track, contextTracks, linked)
+                }
             } catch (e: Exception) {
                 Log.e("PlaybackCoordinator", "Failed to connect MediaController", e)
             }
@@ -115,13 +122,8 @@ class PlaybackCoordinator(
         contextTracks: List<Track>,
         linkedAudio: Map<Int, LinkedAudioEntry>
     ): Boolean {
-        val targetEntry = linkedAudio[track.id]
-        if (targetEntry == null) {
-            _unlinkedTrackRequests.tryEmit(track)
-            return false
-        }
-
         val controller = mediaController ?: run {
+            pendingPlayRequest = Triple(track, contextTracks, linkedAudio)
             connect()
             return false
         }
@@ -129,14 +131,15 @@ class PlaybackCoordinator(
         val playableQueue = buildList {
             add(track)
             contextTracks.forEach { candidate ->
-                if (candidate.id != track.id && linkedAudio.containsKey(candidate.id)) {
+                if (candidate.id != track.id) {
                     add(candidate)
                 }
             }
         }
 
-        val mediaItems = playableQueue.mapNotNull { item ->
-            linkedAudio[item.id]?.let { audio -> buildMediaItem(item, audio.uriString) }
+        val mediaItems = playableQueue.map { item ->
+            val uriString = linkedAudio[item.id]?.uriString ?: StudioAudioSynth.uriForTrack(item.id)
+            buildMediaItem(item, uriString)
         }
 
         if (mediaItems.isEmpty()) return false
@@ -152,30 +155,24 @@ class PlaybackCoordinator(
     }
 
     fun playNext(track: Track, linkedAudio: Map<Int, LinkedAudioEntry>): Boolean {
-        val entry = linkedAudio[track.id] ?: run {
-            _unlinkedTrackRequests.tryEmit(track)
-            return false
-        }
+        val uriString = linkedAudio[track.id]?.uriString ?: StudioAudioSynth.uriForTrack(track.id)
         val controller = mediaController ?: return false
         if (controller.mediaItemCount == 0) {
             return playTrack(track, listOf(track), linkedAudio)
         }
         val insertIndex = (controller.currentMediaItemIndex + 1).coerceAtMost(controller.mediaItemCount)
-        controller.addMediaItem(insertIndex, buildMediaItem(track, entry.uriString))
+        controller.addMediaItem(insertIndex, buildMediaItem(track, uriString))
         syncFromPlayer(controller)
         return true
     }
 
     fun addToQueue(track: Track, linkedAudio: Map<Int, LinkedAudioEntry>): Boolean {
-        val entry = linkedAudio[track.id] ?: run {
-            _unlinkedTrackRequests.tryEmit(track)
-            return false
-        }
+        val uriString = linkedAudio[track.id]?.uriString ?: StudioAudioSynth.uriForTrack(track.id)
         val controller = mediaController ?: return false
         if (controller.mediaItemCount == 0) {
             return playTrack(track, listOf(track), linkedAudio)
         }
-        controller.addMediaItem(buildMediaItem(track, entry.uriString))
+        controller.addMediaItem(buildMediaItem(track, uriString))
         syncFromPlayer(controller)
         return true
     }
@@ -340,7 +337,7 @@ class PlaybackCoordinator(
         val count = controller.mediaItemCount
         val tracks = (0 until count).mapNotNull { idx ->
             val id = controller.getMediaItemAt(idx).mediaId.toIntOrNull()
-            id?.let { catalogRepository.trackById(it) }
+            id?.let { catalogRepository.trackById(it) ?: localAudioStore.customTrackById(it) }
         }
         val currentIdx = controller.currentMediaItemIndex
         val currentTrack = tracks.getOrNull(currentIdx)

@@ -88,7 +88,7 @@ import com.example.shared.components.TrackTile
 private enum class LibraryTab(val label: String) {
     PLAYLISTS("Playlists"),
     LIKED("Liked Songs"),
-    LINKED("Linked Audio"),
+    LINKED("My MP3s"),
     HISTORY("History")
 }
 
@@ -118,10 +118,11 @@ fun LibraryScreen(
     val likedIds by libraryViewModel.likedTrackIds.collectAsStateWithLifecycle()
     val historyState by libraryViewModel.historyState.collectAsStateWithLifecycle()
     val linkedAudio by settingsViewModel.linkedAudio.collectAsStateWithLifecycle()
+    val combinedTracks by catalogViewModel.combinedTracks.collectAsStateWithLifecycle()
     val isRefreshing by libraryViewModel.isRefreshing.collectAsStateWithLifecycle()
 
-    val tracksById = remember(catalogViewModel.allTracks) {
-        catalogViewModel.allTracks.associateBy { it.id }
+    val tracksById = remember(combinedTracks) {
+        combinedTracks.associateBy { it.id }
     }
 
     val activePlaylist = (playlistsState as? UiState.Success)?.data
@@ -363,7 +364,7 @@ fun LibraryScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "${linkedTracks.size} of 110 Linked",
+                                    text = "${linkedTracks.size} Playable Track(s)",
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -378,9 +379,9 @@ fun LibraryScreen(
                             item {
                                 LibraryEmptyCard(
                                     icon = Icons.Rounded.AudioFile,
-                                    title = "No Local Audio Linked",
-                                    body = "Select MP3, AAC, FLAC, or M4A files from your device. Matching filenames link automatically across all 110 Sai Abhyankkar tracks.",
-                                    ctaLabel = "Auto-Match Audio Files",
+                                    title = "No Custom MP3s Added",
+                                    body = "All 110 Studio tracks play right away on tap. Optionally add your Music folder or MP3/AAC files to play your own recordings too.",
+                                    ctaLabel = "Add Music Folder or Files",
                                     onCtaClick = onBulkAutoMatchClick
                                 )
                             }

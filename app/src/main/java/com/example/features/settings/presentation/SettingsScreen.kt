@@ -79,6 +79,7 @@ fun SettingsScreen(
 ) {
     val preferences by settingsViewModel.preferences.collectAsStateWithLifecycle()
     val linkedAudio by settingsViewModel.linkedAudio.collectAsStateWithLifecycle()
+    val customTracks by settingsViewModel.customTracks.collectAsStateWithLifecycle()
     var showClearConfirm by remember { mutableStateOf(false) }
 
     LazyColumn(
@@ -349,7 +350,7 @@ fun SettingsScreen(
                 title = "Local Audio & Privacy"
             ) {
                 Text(
-                    text = "${linkedAudio.size} of 110 tracks linked via zero-permission Storage Access Framework.",
+                    text = "${linkedAudio.size} playable track(s) linked (${customTracks.size} in Device Music) via zero-permission Storage Access Framework.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -365,7 +366,7 @@ fun SettingsScreen(
                     ) {
                         Icon(Icons.Rounded.FolderOpen, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text("Auto-Match", fontWeight = FontWeight.Bold)
+                        Text("Add Music", fontWeight = FontWeight.Bold)
                     }
                     OutlinedButton(
                         onClick = { showClearConfirm = true },

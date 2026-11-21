@@ -112,7 +112,7 @@ fun SearchScreen(
                     FilterChip(
                         selected = searchState.linkedOnly,
                         onClick = catalogViewModel::onToggleSearchLinkedOnly,
-                        label = { Text("Linked Audio") }
+                        label = { Text("My MP3s") }
                     )
                 }
                 items(TrackType.entries) { type ->

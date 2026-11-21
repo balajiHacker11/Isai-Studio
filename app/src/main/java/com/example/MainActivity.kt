@@ -99,6 +99,7 @@ import com.example.features.player.presentation.PlayerViewModel
 import com.example.features.player.presentation.SleepTimerBottomSheet
 import com.example.features.settings.presentation.SettingsScreen
 import com.example.features.settings.presentation.SettingsViewModel
+import com.example.shared.components.AddMusicMethodDialog
 import com.example.shared.components.AddToPlaylistDialog
 import com.example.shared.components.LinkAudioPromptDialog
 import com.example.shared.components.LrcEditorDialog
@@ -258,6 +259,9 @@ private fun IsaiStudioApp(
     // SAF Audio Linking State
     var pendingLinkTrack by remember { mutableStateOf<Track?>(null) }
     var pendingPlayContext by remember { mutableStateOf<List<Track>?>(null) }
+    var pendingImportTrack by remember { mutableStateOf<Track?>(null) }
+    var pendingImportContext by remember { mutableStateOf<List<Track>?>(null) }
+    var shouldAutoPlayAfterImport by remember { mutableStateOf(false) }
 
     val singleAudioLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -278,8 +282,48 @@ private fun IsaiStudioApp(
     val bulkAudioLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments()
     ) { uris ->
+        val preferred = pendingImportTrack
+        val contextTracks = pendingImportContext
+        val autoPlay = shouldAutoPlayAfterImport
+        pendingImportTrack = null
+        pendingImportContext = null
+        shouldAutoPlayAfterImport = false
         if (uris.isNotEmpty()) {
-            settingsViewModel.autoMatchMultipleAudioFiles(uris)
+            settingsViewModel.importMultipleAudioFiles(uris) { matchedIds, customIds ->
+                if (autoPlay) {
+                    playerViewModel.playAfterImport(
+                        preferredTrack = preferred,
+                        matchedIds = matchedIds,
+                        customIds = customIds,
+                        catalogTracks = catalogViewModel.allTracks,
+                        fallbackContext = contextTracks
+                    )
+                }
+            }
+        }
+    }
+
+    val folderAudioLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { treeUri ->
+        val preferred = pendingImportTrack
+        val contextTracks = pendingImportContext
+        val autoPlay = shouldAutoPlayAfterImport
+        pendingImportTrack = null
+        pendingImportContext = null
+        shouldAutoPlayAfterImport = false
+        if (treeUri != null) {
+            settingsViewModel.importMusicFolder(treeUri) { matchedIds, customIds ->
+                if (autoPlay) {
+                    playerViewModel.playAfterImport(
+                        preferredTrack = preferred,
+                        matchedIds = matchedIds,
+                        customIds = customIds,
+                        catalogTracks = catalogViewModel.allTracks,
+                        fallbackContext = contextTracks
+                    )
+                }
+            }
         }
     }
 
@@ -305,6 +349,7 @@ private fun IsaiStudioApp(
     var contextMenuTrack by remember { mutableStateOf<Track?>(null) }
     var addToPlaylistTrack by remember { mutableStateOf<Track?>(null) }
     var editingLyricsTrack by remember { mutableStateOf<Track?>(null) }
+    var showAddMusicDialog by remember { mutableStateOf(false) }
     var showSettingsEqSheet by remember { mutableStateOf(false) }
     var showSettingsSleepSheet by remember { mutableStateOf(false) }
     var showIntroReplay by rememberSaveable { mutableStateOf(false) }
@@ -485,7 +530,7 @@ private fun IsaiStudioApp(
                                         navController.navigate(AppRoute.ArtistDetail)
                                     },
                                     onReplayIntroClick = { showIntroReplay = true },
-                                    onBulkAutoMatchClick = { bulkAudioLauncher.launch(arrayOf("audio/*")) }
+                                    onBulkAutoMatchClick = { showAddMusicDialog = true }
                                 )
                             }
 
@@ -514,7 +559,7 @@ private fun IsaiStudioApp(
                                     onTrackClick = playTrackAction,
                                     onTrackLongPress = { contextMenuTrack = it },
                                     onSwipeQueue = { playerViewModel.addToQueue(it) },
-                                    onBulkAutoMatchClick = { bulkAudioLauncher.launch(arrayOf("audio/*")) }
+                                    onBulkAutoMatchClick = { showAddMusicDialog = true }
                                 )
                             }
 
@@ -525,7 +570,7 @@ private fun IsaiStudioApp(
                                     activeEqPreset = activeEqPreset,
                                     onOpenEqualizer = { showSettingsEqSheet = true },
                                     onOpenSleepTimer = { showSettingsSleepSheet = true },
-                                    onBulkAutoMatchClick = { bulkAudioLauncher.launch(arrayOf("audio/*")) },
+                                    onBulkAutoMatchClick = { showAddMusicDialog = true },
                                     onReplayIntroClick = { showIntroReplay = true }
                                 )
                             }
@@ -542,7 +587,7 @@ private fun IsaiStudioApp(
                                     onPlayTrack = playTrackAction,
                                     onTrackLongPress = { contextMenuTrack = it },
                                     onSwipeQueue = { playerViewModel.addToQueue(it) },
-                                    onBulkAutoMatch = { bulkAudioLauncher.launch(arrayOf("audio/*")) }
+                                    onBulkAutoMatch = { showAddMusicDialog = true }
                                 )
                             }
 
@@ -644,12 +689,43 @@ private fun IsaiStudioApp(
                     pendingPlayContext = null
                     playerViewModel.dismissUnlinkedPrompt()
                 },
-                onPickSingleFile = {
-                    pendingLinkTrack = track
-                    singleAudioLauncher.launch(arrayOf("audio/*"))
+                onPickFolder = {
+                    pendingImportTrack = track
+                    pendingImportContext = pendingPlayContext
+                    shouldAutoPlayAfterImport = true
+                    pendingPlayContext = null
+                    playerViewModel.dismissUnlinkedPrompt()
+                    folderAudioLauncher.launch(null)
                 },
                 onBulkAutoMatch = {
+                    pendingImportTrack = track
+                    pendingImportContext = pendingPlayContext
+                    shouldAutoPlayAfterImport = true
                     pendingPlayContext = null
+                    playerViewModel.dismissUnlinkedPrompt()
+                    bulkAudioLauncher.launch(arrayOf("audio/*"))
+                },
+                onPickSingleFile = {
+                    pendingLinkTrack = track
+                    playerViewModel.dismissUnlinkedPrompt()
+                    singleAudioLauncher.launch(arrayOf("audio/*"))
+                }
+            )
+        }
+
+        if (showAddMusicDialog) {
+            AddMusicMethodDialog(
+                onDismiss = { showAddMusicDialog = false },
+                onPickFolder = {
+                    pendingImportTrack = null
+                    pendingImportContext = null
+                    shouldAutoPlayAfterImport = false
+                    folderAudioLauncher.launch(null)
+                },
+                onSelectFiles = {
+                    pendingImportTrack = null
+                    pendingImportContext = null
+                    shouldAutoPlayAfterImport = false
                     bulkAudioLauncher.launch(arrayOf("audio/*"))
                 }
             )

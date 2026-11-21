@@ -23,7 +23,7 @@ class AppContainer(context: Context) {
     }
 
     val playbackCoordinator: PlaybackCoordinator by lazy {
-        PlaybackCoordinator(appContext, catalogRepository)
+        PlaybackCoordinator(appContext, catalogRepository, localAudioStore)
     }
 
     val libraryRepository: LibraryRepository by lazy {

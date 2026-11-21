@@ -48,6 +48,13 @@ class SettingsViewModel(
             initialValue = emptyMap()
         )
 
+    val customTracks: StateFlow<List<Track>> = localAudioStore.customTracksFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            initialValue = emptyList()
+        )
+
     private val _messages = MutableSharedFlow<String>(extraBufferCapacity = 8)
     val messages: SharedFlow<String> = _messages.asSharedFlow()
 
@@ -92,18 +99,53 @@ class SettingsViewModel(
         }
     }
 
-    fun autoMatchMultipleAudioFiles(uris: List<Uri>) {
+    fun importMusicFolder(
+        treeUri: Uri,
+        onComplete: ((matchedIds: List<Int>, customIds: List<Int>) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            _messages.tryEmit("Scanning music folder…")
+            val summary = localAudioStore.importMusicFolder(
+                treeUri = treeUri,
+                catalogTracks = catalogRepository.tracks,
+                autoMatchUseCase = autoMatchAudioFilesUseCase
+            )
+            emitImportSummary(summary, emptyLabel = "No audio files found in that folder.")
+            onComplete?.invoke(summary.matchedTrackIds, summary.customTrackIds)
+        }
+    }
+
+    fun importMultipleAudioFiles(
+        uris: List<Uri>,
+        onComplete: ((matchedIds: List<Int>, customIds: List<Int>) -> Unit)? = null
+    ) {
         if (uris.isEmpty()) return
         viewModelScope.launch {
-            val namedFiles = uris.map { uri -> uri to localAudioStore.resolveDisplayName(uri) }
-            val matched = autoMatchAudioFilesUseCase(namedFiles, catalogRepository.tracks)
-            val count = localAudioStore.linkMultipleTracks(matched)
-            if (count > 0) {
-                _messages.tryEmit("Auto-matched $count track(s) to local audio!")
-            } else {
-                _messages.tryEmit("No filename matches found. Link individual tracks by tapping them.")
-            }
+            val summary = localAudioStore.importMultipleAudioUris(
+                uris = uris,
+                catalogTracks = catalogRepository.tracks,
+                autoMatchUseCase = autoMatchAudioFilesUseCase
+            )
+            emitImportSummary(summary, emptyLabel = "All selected files were already in your library.")
+            onComplete?.invoke(summary.matchedTrackIds, summary.customTrackIds)
         }
+    }
+
+    private fun emitImportSummary(
+        summary: com.example.core.local.AudioImportSummary,
+        emptyLabel: String
+    ) {
+        val msg = when {
+            summary.totalScanned == 0 -> emptyLabel
+            summary.matchedCatalogCount > 0 && summary.addedCustomCount > 0 ->
+                "Added ${summary.totalImported} songs (${summary.matchedCatalogCount} matched, ${summary.addedCustomCount} added to Device Music)"
+            summary.matchedCatalogCount > 0 ->
+                "Matched ${summary.matchedCatalogCount} catalog song(s)!"
+            summary.addedCustomCount > 0 ->
+                "Added ${summary.addedCustomCount} song(s) to Device Music!"
+            else -> emptyLabel
+        }
+        _messages.tryEmit(msg)
     }
 
     fun unlinkTrackAudio(trackId: Int) {

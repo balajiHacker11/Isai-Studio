@@ -87,3 +87,14 @@ data class LinkedAudioEntry(
     val displayName: String,
     val durationMs: Long = 0L
 )
+
+@Serializable
+data class CustomDeviceTrack(
+    val id: Int,
+    val uriString: String,
+    val displayName: String,
+    val title: String,
+    val artist: String = "Local Audio",
+    val album: String = "Device Music",
+    val durationMs: Long = 0L
+)

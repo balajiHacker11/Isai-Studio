@@ -120,8 +120,7 @@ fun ArtistDetailScreen(
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             Button(
                                 onClick = {
-                                    val target = popularTracks.firstOrNull { linkedAudio.containsKey(it.id) } ?: popularTracks.first()
-                                    onPlayTrack(target, popularTracks)
+                                    onPlayTrack(popularTracks.first(), popularTracks)
                                 },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primary,

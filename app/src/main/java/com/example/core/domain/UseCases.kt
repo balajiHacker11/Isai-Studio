@@ -1,6 +1,8 @@
 package com.example.core.domain
 
 import android.net.Uri
+import com.example.core.local.AudioFileMetadata
+import com.example.core.local.AudioImportCandidate
 import com.example.core.model.LinkedAudioEntry
 import com.example.core.model.LrcLine
 import com.example.core.model.Track
@@ -31,41 +33,91 @@ class SearchCatalogUseCase {
     }
 }
 
+data class AudioMatchPartition(
+    val matchedCatalog: Map<Int, AudioImportCandidate>,
+    val unmatchedFiles: List<AudioImportCandidate>
+)
+
 class AutoMatchAudioFilesUseCase {
     operator fun invoke(
         files: List<Pair<Uri, String>>,
         catalogTracks: List<Track>
     ): Map<Int, Uri> {
-        val matches = mutableMapOf<Int, Uri>()
+        val candidates = files.map { (uri, name) ->
+            AudioImportCandidate(
+                uri = uri,
+                displayName = name,
+                metadata = AudioFileMetadata(null, null, null, 0L)
+            )
+        }
+        return matchAndPartition(candidates, catalogTracks).matchedCatalog.mapValues { it.value.uri }
+    }
+
+    fun matchAndPartition(
+        candidates: List<AudioImportCandidate>,
+        catalogTracks: List<Track>
+    ): AudioMatchPartition {
+        val matched = mutableMapOf<Int, AudioImportCandidate>()
+        val unmatched = mutableListOf<AudioImportCandidate>()
+
         val normalizedTracks = catalogTracks.map { track ->
-            track to normalize(track.title)
+            val spaced = normalize(track.title)
+            val collapsed = spaced.replace(" ", "")
+            Triple(track, spaced, collapsed)
         }
 
-        for ((uri, fileName) in files) {
-            val cleanName = normalize(fileName.substringBeforeLast('.'))
-            if (cleanName.isBlank()) continue
+        for (candidate in candidates) {
+            val fileBase = candidate.displayName.substringBeforeLast('.')
+            val rawInputs = listOfNotNull(candidate.metadata.title, fileBase)
+                .map { cleanNoise(normalize(it)) }
+                .filter { it.isNotBlank() }
 
-            val exactMatch = normalizedTracks.firstOrNull { (track, normTitle) ->
-                normTitle == cleanName && !matches.containsKey(track.id)
-            }
-            if (exactMatch != null) {
-                matches[exactMatch.first.id] = uri
-                continue
-            }
+            var matchedTrackId: Int? = null
 
-            val bestPartial = normalizedTracks
-                .filter { (track, normTitle) ->
-                    !matches.containsKey(track.id) &&
-                        normTitle.length >= 3 &&
-                        (cleanName.contains(normTitle) || normTitle.contains(cleanName))
+            for (cleanInput in rawInputs) {
+                val collapsedInput = cleanInput.replace(" ", "")
+
+                val exact = normalizedTracks.firstOrNull { (track, spaced, collapsed) ->
+                    !matched.containsKey(track.id) &&
+                        (spaced == cleanInput || (collapsed.length >= 4 && collapsed == collapsedInput))
                 }
-                .maxByOrNull { (_, normTitle) -> normTitle.length }
+                if (exact != null) {
+                    matchedTrackId = exact.first.id
+                    break
+                }
 
-            if (bestPartial != null) {
-                matches[bestPartial.first.id] = uri
+                val partial = normalizedTracks
+                    .filter { (track, spaced, collapsed) ->
+                        !matched.containsKey(track.id) &&
+                            collapsed.length >= 4 &&
+                            (cleanInput.contains(spaced) ||
+                                spaced.contains(cleanInput) ||
+                                collapsedInput.contains(collapsed))
+                    }
+                    .maxByOrNull { (_, spaced, _) -> spaced.length }
+
+                if (partial != null) {
+                    matchedTrackId = partial.first.id
+                    break
+                }
+            }
+
+            if (matchedTrackId != null) {
+                matched[matchedTrackId] = candidate
+            } else {
+                unmatched.add(candidate)
             }
         }
-        return matches
+
+        return AudioMatchPartition(matchedCatalog = matched, unmatchedFiles = unmatched)
+    }
+
+    private fun cleanNoise(normalized: String): String {
+        val noise = setOf("320kbps", "128kbps", "mp3", "aac", "flac", "wav", "m4a", "official", "lyric", "lyrical", "video", "audio", "song", "masstamilan", "ringtone")
+        return normalized.split(' ')
+            .filter { token -> token.isNotBlank() && !noise.contains(token) }
+            .joinToString(" ")
+            .trim()
     }
 
     private fun normalize(value: String): String =

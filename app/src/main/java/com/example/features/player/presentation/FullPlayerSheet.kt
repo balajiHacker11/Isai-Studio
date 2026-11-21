@@ -109,8 +109,10 @@ fun FullPlayerSheet(
     val activeEqPreset by playerViewModel.activeEqPreset.collectAsStateWithLifecycle()
     val parsedLyrics by playerViewModel.parsedLyrics.collectAsStateWithLifecycle()
     val rawLrc by playerViewModel.activeTrackRawLrc.collectAsStateWithLifecycle()
+    val linkedAudio by playerViewModel.linkedAudio.collectAsStateWithLifecycle()
 
     val track = snapshot.currentTrack ?: return
+    val isCustomAudio = linkedAudio.containsKey(track.id)
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
@@ -211,7 +213,7 @@ fun FullPlayerSheet(
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "PLAYING FROM ALBUM",
+                        text = if (isCustomAudio) "PLAYING LOCAL AUDIO" else "STUDIO SYNTH AUDIO",
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.White.copy(alpha = 0.7f)
                     )

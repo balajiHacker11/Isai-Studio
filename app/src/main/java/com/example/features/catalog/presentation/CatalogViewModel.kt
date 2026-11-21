@@ -20,12 +20,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 enum class HomeFilter(val label: String) {
-    ALL("All (110)"),
+    ALL("All"),
+    LOCAL_MP3("My MP3s"),
+    DEVICE("Device Music"),
     SONGS("Songs"),
     BGMS("Original BGMs"),
     THEMES("Themes"),
-    VERSIONS("Versions"),
-    LINKED("Linked Audio")
+    VERSIONS("Versions")
 }
 
 data class SearchUiState(
@@ -44,6 +45,23 @@ class CatalogViewModel(
 
     val allAlbums: List<Album> = catalogRepository.albums
     val allTracks: List<Track> = catalogRepository.tracks
+
+    val customTracks: StateFlow<List<Track>> = localAudioStore.customTracksFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            initialValue = emptyList()
+        )
+
+    val combinedTracks: StateFlow<List<Track>> = customTracks
+        .combine(MutableStateFlow(allTracks)) { custom, catalog ->
+            catalog + custom
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            initialValue = allTracks
+        )
 
     val linkedAudio: StateFlow<Map<Int, LinkedAudioEntry>> = localAudioStore.linkedAudioFlow
         .stateIn(
@@ -65,15 +83,17 @@ class CatalogViewModel(
 
     val filteredHomeTracks: StateFlow<List<Track>> = combine(
         _selectedHomeFilter,
-        linkedAudio
-    ) { filter, linked ->
+        linkedAudio,
+        combinedTracks
+    ) { filter, linked, mergedTracks ->
         when (filter) {
-            HomeFilter.ALL -> allTracks
-            HomeFilter.SONGS -> allTracks.filter { it.trackType == TrackType.SONG }
-            HomeFilter.BGMS -> allTracks.filter { it.trackType == TrackType.BGM }
-            HomeFilter.THEMES -> allTracks.filter { it.trackType == TrackType.THEME }
-            HomeFilter.VERSIONS -> allTracks.filter { it.trackType == TrackType.VERSION }
-            HomeFilter.LINKED -> allTracks.filter { linked.containsKey(it.id) }
+            HomeFilter.ALL -> mergedTracks
+            HomeFilter.LOCAL_MP3 -> mergedTracks.filter { linked.containsKey(it.id) }
+            HomeFilter.DEVICE -> mergedTracks.filter { it.albumKey == "device_local" }
+            HomeFilter.SONGS -> mergedTracks.filter { it.trackType == TrackType.SONG }
+            HomeFilter.BGMS -> mergedTracks.filter { it.trackType == TrackType.BGM }
+            HomeFilter.THEMES -> mergedTracks.filter { it.trackType == TrackType.THEME }
+            HomeFilter.VERSIONS -> mergedTracks.filter { it.trackType == TrackType.VERSION }
         }
     }.stateIn(
         scope = viewModelScope,
@@ -86,10 +106,20 @@ class CatalogViewModel(
         _searchType,
         _searchLanguage,
         _searchLinkedOnly,
-        linkedAudio
-    ) { query, type, lang, linkedOnly, linked ->
+        linkedAudio,
+        combinedTracks
+    ) { values ->
+        val query = values[0] as String
+        val type = values[1] as TrackType?
+        val lang = values[2] as String?
+        val linkedOnly = values[3] as Boolean
+        @Suppress("UNCHECKED_CAST")
+        val linked = values[4] as Map<Int, LinkedAudioEntry>
+        @Suppress("UNCHECKED_CAST")
+        val mergedTracks = values[5] as List<Track>
+
         val results = searchCatalogUseCase(
-            tracks = allTracks,
+            tracks = mergedTracks,
             query = query,
             trackTypeFilter = type,
             languageFilter = lang,

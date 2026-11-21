@@ -77,6 +77,8 @@ fun HomeScreen(
 ) {
     val selectedFilter by catalogViewModel.selectedHomeFilter.collectAsStateWithLifecycle()
     val filteredTracks by catalogViewModel.filteredHomeTracks.collectAsStateWithLifecycle()
+    val combinedTracks by catalogViewModel.combinedTracks.collectAsStateWithLifecycle()
+    val customTracks by catalogViewModel.customTracks.collectAsStateWithLifecycle()
     val linkedAudio by catalogViewModel.linkedAudio.collectAsStateWithLifecycle()
     val isRefreshing by catalogViewModel.isRefreshing.collectAsStateWithLifecycle()
     val likedIds by libraryViewModel.likedTrackIds.collectAsStateWithLifecycle()
@@ -85,7 +87,7 @@ fun HomeScreen(
     val recentTracks = when (val st = historyState) {
         is UiState.Success -> st.data
             .distinctBy { it.trackNumber }
-            .mapNotNull { entry -> catalogViewModel.allTracks.firstOrNull { it.id == entry.trackNumber.toInt() } }
+            .mapNotNull { entry -> combinedTracks.firstOrNull { it.id == entry.trackNumber.toInt() } }
             .take(8)
         else -> emptyList()
     }
@@ -143,7 +145,7 @@ fun HomeScreen(
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
-                                text = "${linkedAudio.size}/110 Linked",
+                                text = if (linkedAudio.isEmpty()) "Add MP3s" else "${linkedAudio.size} My MP3s",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -162,10 +164,33 @@ fun HomeScreen(
                 )
             }
 
+            // Your Device Music Shelf (when extra local songs are imported)
+            if (customTracks.isNotEmpty()) {
+                item {
+                    SectionHeader(
+                        title = "Your Device Music",
+                        subtitle = "${customTracks.size} imported audio track(s) ready to play"
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 18.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(customTracks, key = { "device_${it.id}" }) { track ->
+                            MiniTrackShelfCard(
+                                track = track,
+                                isLinked = true,
+                                onClick = { onTrackClick(track, customTracks) }
+                            )
+                        }
+                    }
+                }
+            }
+
             // Recently Played Horizontal Shelf (if user has play history)
             if (recentTracks.isNotEmpty()) {
                 item {
-                    SectionHeader(title = "Recently Played", subtitle = "Synced across your account")
+                    SectionHeader(title = "Recently Played", subtitle = "Saved on this device")
                     Spacer(Modifier.height(10.dp))
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 18.dp),
@@ -270,16 +295,16 @@ fun HomeScreen(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Text(
-                                text = "No local audio files linked yet",
+                                text = "No audio files added yet",
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text(
-                                text = "Select MP3 or AAC files from your device to auto-match against the 110-track catalog.",
+                                text = "Choose your Music folder or select audio files to match the catalog and add all your songs.",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Button(onClick = onBulkAutoMatchClick) {
-                                Text("Auto-Match Local Files")
+                                Text("Add Music Folder or Files")
                             }
                         }
                     }
@@ -355,7 +380,7 @@ private fun ArtistSpotlightCard(
                     shape = CircleShape
                 ) {
                     Text(
-                        text = "COMPOSER ARCHIVE • $linkedCount LINKED",
+                        text = if (linkedCount > 0) "TAP TO PLAY • $linkedCount MY MP3S" else "COMPOSER ARCHIVE • TAP ANY TRACK TO PLAY",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
@@ -388,7 +413,7 @@ private fun ArtistSpotlightCard(
                         ) {
                             Icon(Icons.Rounded.FolderOpen, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Link MP3s", style = MaterialTheme.typography.labelLarge)
+                            Text("Add Music", style = MaterialTheme.typography.labelLarge)
                         }
                         OutlinedButton(
                             onClick = onReplayIntro,
@@ -491,7 +516,7 @@ private fun MiniTrackShelfCard(
                         .clip(RoundedCornerShape(12.dp))
                 )
                 Surface(
-                    color = if (isLinked) MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.primary,
                     shape = CircleShape,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -502,7 +527,7 @@ private fun MiniTrackShelfCard(
                         Icon(
                             imageVector = Icons.Rounded.PlayArrow,
                             contentDescription = "Play ${track.title}",
-                            tint = if (isLinked) Color(0xFF0A0B10) else Color.White,
+                            tint = Color(0xFF0A0B10),
                             modifier = Modifier.size(18.dp)
                         )
                     }

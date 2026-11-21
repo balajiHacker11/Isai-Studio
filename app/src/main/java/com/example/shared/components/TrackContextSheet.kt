@@ -208,21 +208,22 @@ private fun SheetActionItem(
 fun LinkAudioPromptDialog(
     track: Track,
     onDismiss: () -> Unit,
-    onPickSingleFile: () -> Unit,
-    onBulkAutoMatch: () -> Unit
+    onPickFolder: () -> Unit,
+    onBulkAutoMatch: () -> Unit,
+    onPickSingleFile: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Link Local Audio for \"${track.title}\"",
+                text = "Add Music to Play",
                 style = MaterialTheme.typography.headlineMedium
             )
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    text = "This catalog track doesn't have an audio file attached yet. Select an MP3, AAC, FLAC, or M4A file from your device, or bulk auto-match multiple files by filename.",
+                    text = "\"${track.title}\" is a catalog listing (no MP3 is built into the app). Add your music folder or select all your songs once to play right away.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -232,37 +233,91 @@ fun LinkAudioPromptDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Tip: Files named like \"${track.title}.mp3\" match automatically during bulk import.",
+                        text = "Matching song names link into the 110-track catalog, and any other audio files are added to Device Music so nothing is skipped.",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(12.dp)
                     )
                 }
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = { onDismiss(); onPickFolder() },
+                        modifier = Modifier.fillMaxWidth().testTag("dialog_add_music_folder")
+                    ) {
+                        Icon(Icons.Rounded.FolderOpen, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Add Music Folder (All Songs)")
+                    }
+                    OutlinedButton(
+                        onClick = { onDismiss(); onBulkAutoMatch() },
+                        modifier = Modifier.fillMaxWidth().testTag("dialog_bulk_match")
+                    ) {
+                        Icon(Icons.Rounded.AudioFile, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Select Multiple Audio Files")
+                    }
+                }
             }
         },
         confirmButton = {
-            Button(
+            TextButton(
                 onClick = { onDismiss(); onPickSingleFile() },
                 modifier = Modifier.testTag("dialog_pick_single_audio")
             ) {
-                Icon(Icons.Rounded.AudioFile, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(6.dp))
-                Text("Select File")
+                Text("Pick 1 File for This Track")
             }
         },
         dismissButton = {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = onDismiss) {
-                    Text("Cancel")
-                }
-                OutlinedButton(
-                    onClick = { onDismiss(); onBulkAutoMatch() },
-                    modifier = Modifier.testTag("dialog_bulk_match")
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun AddMusicMethodDialog(
+    onDismiss: () -> Unit,
+    onPickFolder: () -> Unit,
+    onSelectFiles: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Add Your Music",
+                style = MaterialTheme.typography.headlineMedium
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    text = "Import all your MP3, AAC, M4A, or FLAC files at once. Matching filenames link to the Sai Abhyankkar catalog and any other songs are added to Device Music.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Button(
+                    onClick = { onDismiss(); onPickFolder() },
+                    modifier = Modifier.fillMaxWidth().testTag("add_music_folder_button")
                 ) {
                     Icon(Icons.Rounded.FolderOpen, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Auto-Match")
+                    Spacer(Modifier.width(8.dp))
+                    Text("Choose Music Folder")
                 }
+                OutlinedButton(
+                    onClick = { onDismiss(); onSelectFiles() },
+                    modifier = Modifier.fillMaxWidth().testTag("add_music_files_button")
+                ) {
+                    Icon(Icons.Rounded.AudioFile, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Select Audio Files")
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
             }
         }
     )

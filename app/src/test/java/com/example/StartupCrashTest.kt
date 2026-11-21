@@ -24,6 +24,10 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
+import android.net.Uri
+import com.example.core.local.AudioFileMetadata
+import com.example.core.local.AudioImportCandidate
+
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [36])
 class StartupCrashTest {
@@ -96,5 +100,57 @@ class StartupCrashTest {
         )
         assertTrue(prefsRepo.savePreferences(customPrefs).isSuccess)
         assertEquals(customPrefs, prefsRepo.observePreferences().first())
+    }
+
+    @Test
+    fun audioImportMatchesCatalogAndPreservesExtraDeviceTracks() = runTest {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val container = AppContainer(context)
+
+        val candidates = listOf(
+            AudioImportCandidate(
+                uri = Uri.parse("content://media/external/audio/1"),
+                displayName = "01_KatchiSera_320kbps.mp3",
+                metadata = AudioFileMetadata(title = null, artist = "Sai Abhyankkar", album = null, durationMs = 195_000L)
+            ),
+            AudioImportCandidate(
+                uri = Uri.parse("content://media/external/audio/2"),
+                displayName = "My_Custom_Roadtrip_Mix.mp3",
+                metadata = AudioFileMetadata(title = "Roadtrip Mix", artist = "Local DJ", album = "Drives", durationMs = 240_000L)
+            )
+        )
+
+        val summary = container.localAudioStore.importAudioCandidates(
+            candidates = candidates,
+            catalogTracks = container.catalogRepository.tracks,
+            autoMatchUseCase = container.autoMatchAudioFilesUseCase
+        )
+
+        assertEquals(1, summary.matchedCatalogCount)
+        assertEquals(1, summary.addedCustomCount)
+
+        val linked = container.localAudioStore.linkedAudioFlow.first()
+        val custom = container.localAudioStore.customTracksFlow.first()
+        assertTrue(linked.containsKey(summary.matchedTrackIds.first()))
+        assertTrue(linked.containsKey(summary.customTrackIds.first()))
+        assertTrue(custom.any { it.title == "Roadtrip Mix" && it.album == "Drives" })
+    }
+
+    @Test
+    fun studioAudioSynthGeneratesValidWavForCatalogTracks() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val repo = CatalogRepository(context)
+        val firstTrack = repo.tracks.first()
+        val wav = com.example.core.player.StudioAudioSynth.getOrRenderTrackWav(firstTrack.id, repo)
+
+        assertTrue("WAV byte stream must exceed 44-byte header", wav.size > 44)
+        assertEquals('R'.code.toByte(), wav[0])
+        assertEquals('I'.code.toByte(), wav[1])
+        assertEquals('F'.code.toByte(), wav[2])
+        assertEquals('F'.code.toByte(), wav[3])
+        assertEquals('W'.code.toByte(), wav[8])
+        assertEquals('A'.code.toByte(), wav[9])
+        assertEquals('V'.code.toByte(), wav[10])
+        assertEquals('E'.code.toByte(), wav[11])
     }
 }

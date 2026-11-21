@@ -23,10 +23,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.AudioFile
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -237,9 +237,9 @@ fun TrackTile(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Icon(
-                            imageVector = if (isLinked) Icons.Rounded.CheckCircle else Icons.Outlined.AudioFile,
-                            contentDescription = if (isLinked) "Local audio linked" else "Tap to link audio",
-                            tint = if (isLinked) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f),
+                            imageVector = if (isLinked) Icons.Rounded.CheckCircle else Icons.Rounded.MusicNote,
+                            contentDescription = if (isLinked) "Local MP3 linked" else "Studio audio ready to play",
+                            tint = if (isLinked) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
                             modifier = Modifier.size(13.dp)
                         )
                         Text(

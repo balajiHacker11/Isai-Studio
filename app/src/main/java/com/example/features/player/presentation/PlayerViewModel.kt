@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -148,9 +149,43 @@ class PlayerViewModel(
     }
 
     fun playTrack(track: Track, contextTracks: List<Track>) {
-        val played = playbackCoordinator.playTrack(track, contextTracks, linkedAudio.value)
-        if (!played && linkedAudio.value.containsKey(track.id)) {
-            _snackbarMessages.tryEmit("Connecting audio service… tap again in a moment.")
+        playbackCoordinator.playTrack(track, contextTracks, linkedAudio.value)
+    }
+
+    fun playAfterImport(
+        preferredTrack: Track?,
+        matchedIds: List<Int>,
+        customIds: List<Int>,
+        catalogTracks: List<Track>,
+        fallbackContext: List<Track>?
+    ) {
+        viewModelScope.launch {
+            val latestLinked = localAudioStore.linkedAudioFlow.first()
+            val customTracks = localAudioStore.customTracksFlow.first()
+            val allMerged = catalogTracks + customTracks
+
+            val targetTrack = when {
+                preferredTrack != null && latestLinked.containsKey(preferredTrack.id) -> preferredTrack
+                matchedIds.isNotEmpty() -> allMerged.firstOrNull { it.id == matchedIds.first() }
+                customIds.isNotEmpty() -> allMerged.firstOrNull { it.id == customIds.first() }
+                else -> null
+            } ?: return@launch
+
+            val queue = buildList {
+                val baseList = fallbackContext?.takeIf { it.isNotEmpty() } ?: allMerged
+                add(targetTrack)
+                baseList.forEach { candidate ->
+                    if (candidate.id != targetTrack.id && latestLinked.containsKey(candidate.id)) {
+                        add(candidate)
+                    }
+                }
+                allMerged.forEach { candidate ->
+                    if (candidate.id != targetTrack.id && latestLinked.containsKey(candidate.id) && none { it.id == candidate.id }) {
+                        add(candidate)
+                    }
+                }
+            }
+            playbackCoordinator.playTrack(targetTrack, queue, latestLinked)
         }
     }
 
