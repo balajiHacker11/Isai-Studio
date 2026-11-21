@@ -8,10 +8,10 @@
     <string name="intro_enter_studio">Enter Studio</string>
     <string name="intro_next">Next Story</string>
     <string name="link_audio_title">Link Local Audio</string>
-    <string name="link_audio_hint">Select an MP3, AAC, FLAC, or M4A file from your device to play this track.</string>
+    <string name="link_audio_hint">Select an MP3, AAC, FLAC, or M4A file from your device to replace or add to this track.</string>
     <string name="bulk_link_audio">Auto-Match Local Audio Files</string>
-    <string name="search_placeholder">Search songs, films, BGMs, artists…</string>
-    <string name="empty_playlists">No playlists yet. Tap + to curate your first Sai Abhyankkar mix.</string>
+    <string name="search_placeholder">Search songs, albums, BGMs, themes…</string>
+    <string name="empty_playlists">No playlists yet. Tap + to curate your first Isai Studio mix.</string>
     <string name="empty_likes">Swipe right or double-tap any track cover to save it to Liked Songs.</string>
     <string name="empty_history">Your listening history will appear here as you play tracks.</string>
     <string name="empty_lyrics">No synced LRC lyrics attached yet. Tap Edit to paste LRC lines.</string>

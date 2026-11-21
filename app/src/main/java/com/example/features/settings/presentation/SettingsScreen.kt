@@ -136,7 +136,7 @@ fun SettingsScreen(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = "110-track Sai Abhyankkar catalog • Saved locally on device",
+                                text = "24 bundled royalty-free MP3s + custom local MP3s • Saved on device",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 2,

@@ -238,7 +238,7 @@ fun TrackTile(
                     ) {
                         Icon(
                             imageVector = if (isLinked) Icons.Rounded.CheckCircle else Icons.Rounded.MusicNote,
-                            contentDescription = if (isLinked) "Local MP3 linked" else "Studio audio ready to play",
+                            contentDescription = if (isLinked) "Custom MP3 linked" else "Studio MP3 ready to play",
                             tint = if (isLinked) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
                             modifier = Modifier.size(13.dp)
                         )

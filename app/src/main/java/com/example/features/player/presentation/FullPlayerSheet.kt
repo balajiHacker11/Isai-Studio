@@ -212,8 +212,13 @@ fun FullPlayerSheet(
                     )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    val sourceBadge = when {
+                        isCustomAudio -> "PLAYING CUSTOM MP3"
+                        track.assetPath != null -> "BUNDLED STUDIO MP3"
+                        else -> "STUDIO SYNTH AUDIO"
+                    }
                     Text(
-                        text = if (isCustomAudio) "PLAYING LOCAL AUDIO" else "STUDIO SYNTH AUDIO",
+                        text = sourceBadge,
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.White.copy(alpha = 0.7f)
                     )

@@ -25,7 +25,7 @@ class CatalogRepository(private val context: Context) {
     fun tracksForAlbum(albumKey: String): List<Track> = tracks.filter { it.albumKey == albumKey }
 
     private fun loadFromAssets(): Pair<List<Album>, List<Track>> {
-        val rawJson = context.assets.open("sai_abhyankkar_catalog.json")
+        val rawJson = context.assets.open("studio_catalog.json")
             .bufferedReader()
             .use { it.readText() }
         val payload = json.decodeFromString<CatalogPayload>(rawJson)
@@ -48,7 +48,7 @@ class CatalogRepository(private val context: Context) {
         val albumKeyByTitle = albums.associateBy({ it.title }, { it.albumKey })
 
         val tracks = payload.tracks.map { dto ->
-            val albumKey = albumKeyByTitle[dto.album] ?: "indie"
+            val albumKey = albumKeyByTitle[dto.album] ?: "indie_voices"
             val (artKey, artRes) = ArtistArtwork.artworkForAlbumKey(albumKey)
             Track(
                 id = dto.id,
@@ -63,7 +63,10 @@ class CatalogRepository(private val context: Context) {
                 creditedArtists = dto.creditedArtists,
                 notes = dto.notes,
                 artworkKey = artKey,
-                artworkRes = artRes
+                artworkRes = artRes,
+                assetPath = dto.assetPath,
+                durationMs = dto.durationMs,
+                defaultLrc = dto.defaultLrc
             )
         }
 

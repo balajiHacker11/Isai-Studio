@@ -77,18 +77,18 @@ class PlayerViewModel(
         )
 
     val activeTrackRawLrc: StateFlow<String> = snapshot
-        .map { it.currentTrack?.id }
-        .distinctUntilChanged()
-        .flatMapLatest { trackId ->
-            if (trackId == null) {
+        .map { it.currentTrack }
+        .distinctUntilChanged { old, new -> old?.id == new?.id }
+        .flatMapLatest { track ->
+            if (track == null) {
                 flowOf("")
             } else {
-                lyricsRepository.observeTrackLyrics(trackId)
-                    .map { it?.lrcContent ?: "" }
+                lyricsRepository.observeTrackLyrics(track.id)
+                    .map { saved -> saved?.lrcContent ?: track.defaultLrc.orEmpty() }
                     .catch { error ->
                         if (error is CancellationException) throw error
                         Log.w("PlayerVM", "Error observing track lyrics", error)
-                        emit("")
+                        emit(track.defaultLrc.orEmpty())
                     }
             }
         }

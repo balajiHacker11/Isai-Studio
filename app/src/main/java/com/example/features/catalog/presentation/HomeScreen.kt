@@ -121,7 +121,7 @@ fun HomeScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "Sai Abhyankkar",
+                            text = "Studio Collective",
                             style = MaterialTheme.typography.displayMedium,
                             color = MaterialTheme.colorScheme.onBackground
                         )
@@ -230,11 +230,11 @@ fun HomeScreen(
             // Made For You: Indie & Anthem Highlights
             item {
                 val highlights = catalogViewModel.allTracks.filter {
-                    it.albumKey == "indie" || it.trackType == TrackType.THEME
+                    it.albumKey == "indie_voices" || it.trackType == TrackType.THEME
                 }.take(10)
                 SectionHeader(
-                    title = "Think Indie & Promo Themes",
-                    subtitle = "Signature singles & universe cues"
+                    title = "Indie Sessions & Themes",
+                    subtitle = "Signature bundled MP3 singles & cues"
                 )
                 Spacer(Modifier.height(10.dp))
                 LazyRow(
@@ -352,7 +352,7 @@ private fun ArtistSpotlightCard(
         Box(modifier = Modifier.height(215.dp)) {
             Image(
                 painter = painterResource(id = R.drawable.artist_mic_studio),
-                contentDescription = "Sai Abhyankkar Studio",
+                contentDescription = "Isai Studio Collective",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
@@ -380,7 +380,7 @@ private fun ArtistSpotlightCard(
                     shape = CircleShape
                 ) {
                     Text(
-                        text = if (linkedCount > 0) "TAP TO PLAY • $linkedCount MY MP3S" else "COMPOSER ARCHIVE • TAP ANY TRACK TO PLAY",
+                        text = if (linkedCount > 0) "BUNDLED MP3S + $linkedCount CUSTOM" else "24 BUNDLED MP3 TRACKS • TAP TO PLAY",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
@@ -389,13 +389,13 @@ private fun ArtistSpotlightCard(
 
                 Column {
                     Text(
-                        text = "110 Songs, Themes & BGMs",
+                        text = "24 Original Studio MP3s",
                         style = MaterialTheme.typography.headlineMedium,
                         color = Color.White
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "Explore Think Indie, Dude, Karuppu, Balti, Baththa & OM.",
+                        text = "Explore Indie Sessions, Analog Synths, Nightfall Score & Unplugged.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.8f),
                         maxLines = 2

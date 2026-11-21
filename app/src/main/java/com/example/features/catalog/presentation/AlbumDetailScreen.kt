@@ -134,7 +134,7 @@ fun AlbumDetailScreen(
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = "Sai Abhyankkar • ${tracks.size} tracks" +
+                                text = "Isai Collective • ${tracks.size} MP3 tracks" +
                                     (album.releaseDate?.let { " • $it" } ?: ""),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.White.copy(alpha = 0.8f)

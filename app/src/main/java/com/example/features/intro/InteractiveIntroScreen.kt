@@ -253,7 +253,7 @@ fun InteractiveIntroScreen(
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
-                                text = "SAI ABHYANKKAR",
+                                text = "ISAI STUDIO COLLECTIVE",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = Color.White
                             )

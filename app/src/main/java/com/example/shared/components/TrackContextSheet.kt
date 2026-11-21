@@ -223,7 +223,7 @@ fun LinkAudioPromptDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    text = "\"${track.title}\" is a catalog listing (no MP3 is built into the app). Add your music folder or select all your songs once to play right away.",
+                    text = "\"${track.title}\" includes built-in Studio MP3 audio. You can also import your own music folder or custom MP3 files anytime.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -233,7 +233,7 @@ fun LinkAudioPromptDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Matching song names link into the 110-track catalog, and any other audio files are added to Device Music so nothing is skipped.",
+                        text = "Matching filenames replace or link into the catalog, and any extra audio files are added to Device Music so nothing is skipped.",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(12.dp)
@@ -292,7 +292,7 @@ fun AddMusicMethodDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    text = "Import all your MP3, AAC, M4A, or FLAC files at once. Matching filenames link to the Sai Abhyankkar catalog and any other songs are added to Device Music.",
+                    text = "Import all your MP3, AAC, M4A, or FLAC files at once. Matching filenames link to the Studio catalog and any other songs are added to Device Music.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

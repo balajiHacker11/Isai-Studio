@@ -138,7 +138,7 @@ class PlaybackCoordinator(
         }
 
         val mediaItems = playableQueue.map { item ->
-            val uriString = linkedAudio[item.id]?.uriString ?: StudioAudioSynth.uriForTrack(item.id)
+            val uriString = resolveTrackAudioUri(item, linkedAudio)
             buildMediaItem(item, uriString)
         }
 
@@ -155,7 +155,7 @@ class PlaybackCoordinator(
     }
 
     fun playNext(track: Track, linkedAudio: Map<Int, LinkedAudioEntry>): Boolean {
-        val uriString = linkedAudio[track.id]?.uriString ?: StudioAudioSynth.uriForTrack(track.id)
+        val uriString = resolveTrackAudioUri(track, linkedAudio)
         val controller = mediaController ?: return false
         if (controller.mediaItemCount == 0) {
             return playTrack(track, listOf(track), linkedAudio)
@@ -167,7 +167,7 @@ class PlaybackCoordinator(
     }
 
     fun addToQueue(track: Track, linkedAudio: Map<Int, LinkedAudioEntry>): Boolean {
-        val uriString = linkedAudio[track.id]?.uriString ?: StudioAudioSynth.uriForTrack(track.id)
+        val uriString = resolveTrackAudioUri(track, linkedAudio)
         val controller = mediaController ?: return false
         if (controller.mediaItemCount == 0) {
             return playTrack(track, listOf(track), linkedAudio)
@@ -175,6 +175,12 @@ class PlaybackCoordinator(
         controller.addMediaItem(buildMediaItem(track, uriString))
         syncFromPlayer(controller)
         return true
+    }
+
+    private fun resolveTrackAudioUri(track: Track, linkedAudio: Map<Int, LinkedAudioEntry>): String {
+        linkedAudio[track.id]?.uriString?.let { return it }
+        track.assetPath?.let { path -> return "asset:///$path" }
+        return StudioAudioSynth.uriForTrack(track.id)
     }
 
     fun jumpToQueueIndex(index: Int) {
@@ -326,7 +332,7 @@ class PlaybackCoordinator(
                 _snapshot.update {
                     it.copy(
                         isPlaying = false,
-                        playbackError = "Unable to read local audio file. Please re-link this track."
+                        playbackError = "Unable to play audio for this track."
                     )
                 }
             }

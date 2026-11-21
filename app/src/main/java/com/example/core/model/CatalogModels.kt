@@ -39,9 +39,12 @@ data class TrackDto(
     @SerialName("film_or_project") val filmOrProject: String = "",
     val language: String = "",
     @SerialName("album_release_date") val albumReleaseDate: String? = null,
-    val composer: String = "Sai Abhyankkar",
+    val composer: String = "Isai Collective",
     @SerialName("credited_artists") val creditedArtists: List<String> = emptyList(),
-    val notes: String? = null
+    val notes: String? = null,
+    @SerialName("asset_path") val assetPath: String? = null,
+    @SerialName("duration_ms") val durationMs: Long = 0L,
+    @SerialName("default_lrc") val defaultLrc: String? = null
 )
 
 enum class TrackType(val key: String, val label: String) {
@@ -81,7 +84,10 @@ data class Track(
     val creditedArtists: List<String>,
     val notes: String?,
     val artworkKey: String,
-    @DrawableRes val artworkRes: Int
+    @DrawableRes val artworkRes: Int,
+    val assetPath: String? = null,
+    val durationMs: Long = 0L,
+    val defaultLrc: String? = null
 ) {
     val subtitle: String
         get() = buildString {
@@ -116,55 +122,55 @@ object ArtistArtwork {
     val introStories: List<ArtistStorySlide> = listOf(
         ArtistStorySlide(
             index = 0,
-            chapter = "01 • THINK INDIE ORIGINS",
-            title = "The Voice Behind Katchi Sera",
-            caption = "From viral indie melodies to 110+ compositions, step inside Sai Abhyankkar's sonic studio.",
-            highlightTrackTitle = "Katchi Sera • Aasa Kooda",
+            chapter = "01 • INDIE STUDIO SESSIONS",
+            title = "Bundled Original MP3 Audio",
+            caption = "Step inside Isai Studio — 24 original royalty-free MP3 tracks bundled directly inside the app for instant offline playback.",
+            highlightTrackTitle = "Kaveri Dawn • Monsoon Lantern",
             artworkKey = "artist_mic_studio",
             imageRes = R.drawable.artist_mic_studio
         ),
         ArtistStorySlide(
             index = 1,
             chapter = "02 • ANALOG CONSOLE CRAFT",
-            title = "Hardware Synths & Raw Textures",
-            caption = "Layering warm analog brass and driving percussion across Tamil, Telugu, and Malayalam scores.",
-            highlightTrackTitle = "Sithira Puthiri • Vizhi Veekura",
+            title = "Hardware Synths & Brass",
+            caption = "Warm detuned oscillators, punchy basslines, and stereo arpeggios mastered into crisp 44.1 kHz MP3 files.",
+            highlightTrackTitle = "Oscillator Hearts • Filter Sweep",
             artworkKey = "artist_synth_console",
             imageRes = R.drawable.artist_synth_console
         ),
         ArtistStorySlide(
             index = 2,
-            chapter = "03 • LATE NIGHT DAW",
-            title = "42 Original BGMs & Themes",
-            caption = "Explore every score cue from Karuppu Side A & B, Dude, Balti, and Baththa in one place.",
-            highlightTrackTitle = "God Mode • Karuppu Title Theme",
+            chapter = "03 • MIDNIGHT DAW SCORES",
+            title = "Cinematic BGMs & Themes",
+            caption = "Explore atmospheric suspense motifs, Lydian orchestral themes, and high-energy chase cues in Nightfall Score.",
+            highlightTrackTitle = "Zero Hour Motif • Dawn Over Harbour",
             artworkKey = "artist_daw_session",
             imageRes = R.drawable.artist_daw_session
         ),
         ArtistStorySlide(
             index = 3,
-            chapter = "04 • YOUTH & ENERGY",
-            title = "Built for Seamless Playback",
-            caption = "Attach your local MP3 or AAC files with zero-permission matching and stream via Media3 ExoPlayer.",
-            highlightTrackTitle = "Oorum Blood • Singari",
+            chapter = "04 • INSTANT MEDIA3 ENGINE",
+            title = "Zero-Wait Offline Playback",
+            caption = "Tap any song to play immediately, or import your own local MP3/M4A folders anytime using Storage Access Framework.",
+            highlightTrackTitle = "Marina Skyline • Sunroof Groove",
             artworkKey = "artist_tekki_smile",
             imageRes = R.drawable.artist_tekki_smile
         ),
         ArtistStorySlide(
             index = 4,
-            chapter = "05 • UNPLUGGED MOODS",
-            title = "Dynamic Art & Synced Lyrics",
-            caption = "Color-reactive mini-player, swipe gestures, 5-band Equalizer, and timestamped LRC lyrics.",
-            highlightTrackTitle = "Pavazha Malli Unplugged • Kannukulla",
+            chapter = "05 • UNPLUGGED & LYRICS",
+            title = "Dynamic Art & 5-Band EQ",
+            caption = "Color-reactive full player, swipe gestures, hardware Equalizer presets, sleep timer, and synced LRC lyrics.",
+            highlightTrackTitle = "Jasmine Breeze • Porchlight Acoustic",
             artworkKey = "artist_chill_lounge",
             imageRes = R.drawable.artist_chill_lounge
         ),
         ArtistStorySlide(
             index = 5,
             chapter = "06 • YOUR LOCAL STUDIO",
-            title = "Curate Your Local Studio",
-            caption = "Curate playlists, favorite tracks, and customize your studio settings — saved privately on your device.",
-            highlightTrackTitle = "FA FA FA • Mozhiye",
+            title = "Private Device Library",
+            caption = "Curate playlists, favorite tracks, and customize your studio console — saved privately on your device.",
+            highlightTrackTitle = "Golden Encore • Final Curtain Theme",
             artworkKey = "artist_stage_blazer",
             imageRes = R.drawable.artist_stage_blazer
         )
@@ -174,14 +180,12 @@ object ArtistArtwork {
         portraits.firstOrNull { it.first == key }?.second ?: R.drawable.artist_mic_studio
 
     fun artworkForAlbumKey(albumKey: String): Pair<String, Int> = when (albumKey) {
-        "indie", "indie_x" -> "artist_mic_studio" to R.drawable.artist_mic_studio
-        "benz" -> "artist_synth_console" to R.drawable.artist_synth_console
-        "balti" -> "artist_chill_lounge" to R.drawable.artist_chill_lounge
-        "dude", "dude_te" -> "artist_tekki_smile" to R.drawable.artist_tekki_smile
-        "k_ost", "v" -> "artist_stage_blazer" to R.drawable.artist_stage_blazer
-        "k_a", "k_b" -> "artist_daw_session" to R.drawable.artist_daw_session
-        "b" -> "artist_synth_console" to R.drawable.artist_synth_console
-        "om" -> "artist_mic_studio" to R.drawable.artist_mic_studio
+        "indie_voices" -> "artist_mic_studio" to R.drawable.artist_mic_studio
+        "analog_console" -> "artist_synth_console" to R.drawable.artist_synth_console
+        "nightfall_score" -> "artist_daw_session" to R.drawable.artist_daw_session
+        "neon_rhythm" -> "artist_tekki_smile" to R.drawable.artist_tekki_smile
+        "unplugged_moods" -> "artist_chill_lounge" to R.drawable.artist_chill_lounge
+        "arena_anthems" -> "artist_stage_blazer" to R.drawable.artist_stage_blazer
         else -> "artist_mic_studio" to R.drawable.artist_mic_studio
     }
 }

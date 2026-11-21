@@ -1,6 +1,6 @@
 {
   "name": "Isai Studio",
-  "description": "Sai Abhyankkar music player with Jetpack Compose, Media3 ExoPlayer, interactive story intro, local MP3/AAC playback, and device-local library.",
+  "description": "Royalty-free offline MP3 music player built with Jetpack Compose, Media3 ExoPlayer, interactive 6-photo intro, 24 bundled original MP3 tracks, and local audio library.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

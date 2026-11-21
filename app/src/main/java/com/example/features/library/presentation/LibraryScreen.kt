@@ -380,7 +380,7 @@ fun LibraryScreen(
                                 LibraryEmptyCard(
                                     icon = Icons.Rounded.AudioFile,
                                     title = "No Custom MP3s Added",
-                                    body = "All 110 Studio tracks play right away on tap. Optionally add your Music folder or MP3/AAC files to play your own recordings too.",
+                                    body = "All 24 bundled Studio MP3s play right away on tap. Optionally add your Music folder or custom MP3/AAC files to play your own recordings too.",
                                     ctaLabel = "Add Music Folder or Files",
                                     onCtaClick = onBulkAutoMatchClick
                                 )

@@ -82,7 +82,7 @@ fun ArtistDetailScreen(
                 Box(modifier = Modifier.fillMaxWidth().height(310.dp)) {
                     Image(
                         painter = painterResource(id = R.drawable.artist_stage_blazer),
-                        contentDescription = "Sai Abhyankkar",
+                        contentDescription = "Isai Collective",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -101,18 +101,18 @@ fun ArtistDetailScreen(
                             .padding(20.dp)
                     ) {
                         Text(
-                            text = "VERIFIED COMPOSER • PRODUCER",
+                            text = "ROYALTY-FREE COLLECTIVE • MP3 MASTERS",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.secondary
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "Sai Abhyankkar",
+                            text = "Isai Collective",
                             style = MaterialTheme.typography.displayLarge,
                             color = Color.White
                         )
                         Text(
-                            text = "110 Tracks • 48 Songs • 10 Versions • 10 Themes • 42 BGMs",
+                            text = "24 Bundled MP3s • Songs, Versions, Themes & Original BGMs",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White.copy(alpha = 0.85f)
                         )
@@ -168,7 +168,7 @@ fun ArtistDetailScreen(
 
             item {
                 Text(
-                    text = "All 12 Releases",
+                    text = "All ${catalogViewModel.allAlbums.size} Releases",
                     style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.padding(horizontal = 18.dp)
                 )

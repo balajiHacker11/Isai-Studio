@@ -1,0 +1,472 @@
+{
+  "artist": "Isai Studio Collective",
+  "scope": "24 original royalty-free MP3 tracks bundled directly in the APK: songs, themes, versions, and cinematic BGMs",
+  "generated_on": "2026-11-20",
+  "sources": [
+    "Isai Studio Original Royalty-Free Masters (Bundled MP3 Assets)"
+  ],
+  "total_tracks": 24,
+  "known_gaps": [],
+  "albums": [
+    {
+      "album_key": "indie_voices",
+      "album": "Kaveri Pulse (Indie Sessions)",
+      "film_or_project": "Indie Sessions",
+      "album_type": "Original Indie EP",
+      "language": "Tamil",
+      "release_date": "2026-06-15",
+      "source": "Isai Studio Original (CC0 / Royalty-Free)",
+      "expected_tracks": 4,
+      "tracks_listed": 4
+    },
+    {
+      "album_key": "analog_console",
+      "album": "Analog Brass & Synths",
+      "film_or_project": "Console Works",
+      "album_type": "Synth Studio Album",
+      "language": "Tamil",
+      "release_date": "2026-07-10",
+      "source": "Isai Studio Original (CC0 / Royalty-Free)",
+      "expected_tracks": 4,
+      "tracks_listed": 4
+    },
+    {
+      "album_key": "nightfall_score",
+      "album": "Midnight DAW: Original Score",
+      "film_or_project": "Nightfall Score",
+      "album_type": "Original Score",
+      "language": "Instrumental",
+      "release_date": "2026-08-05",
+      "source": "Isai Studio Original (CC0 / Royalty-Free)",
+      "expected_tracks": 4,
+      "tracks_listed": 4
+    },
+    {
+      "album_key": "neon_rhythm",
+      "album": "Marina Drift (Motion Soundtrack)",
+      "film_or_project": "Marina Drift",
+      "album_type": "Soundtrack Album",
+      "language": "Telugu",
+      "release_date": "2026-09-12",
+      "source": "Isai Studio Original (CC0 / Royalty-Free)",
+      "expected_tracks": 4,
+      "tracks_listed": 4
+    },
+    {
+      "album_key": "unplugged_moods",
+      "album": "Courtyard Unplugged",
+      "film_or_project": "Courtyard Sessions",
+      "album_type": "Acoustic & Versions",
+      "language": "Malayalam",
+      "release_date": "2026-10-03",
+      "source": "Isai Studio Original (CC0 / Royalty-Free)",
+      "expected_tracks": 4,
+      "tracks_listed": 4
+    },
+    {
+      "album_key": "arena_anthems",
+      "album": "Spotlight Arena Anthems",
+      "film_or_project": "Arena Tour",
+      "album_type": "Themes & Score",
+      "language": "Instrumental",
+      "release_date": "2026-11-01",
+      "source": "Isai Studio Original (CC0 / Royalty-Free)",
+      "expected_tracks": 4,
+      "tracks_listed": 4
+    }
+  ],
+  "tracks": [
+    {
+      "id": 1,
+      "title": "Kaveri Dawn",
+      "track_type": "song",
+      "album": "Kaveri Pulse (Indie Sessions)",
+      "film_or_project": "Indie Sessions",
+      "language": "Tamil",
+      "album_release_date": "2026-06-15",
+      "composer": "Isai Collective",
+      "credited_artists": [
+        "Arjun V.",
+        "Ananya R."
+      ],
+      "notes": "Royalty-free Tamil indie sunrise groove in D pentatonic",
+      "asset_path": "audio/01_kaveri_dawn.mp3",
+      "duration_ms": 36000,
+      "default_lrc": "[00:02.00]Golden mist along the Kaveri shore\n[00:09.00]Warm plucked strings wake the morning sky\n[00:17.00]Every rhythm finds its own shoreline\n[00:25.00]Sunlight dancing in 112 BPM"
+    },
+    {
+      "id": 2,
+      "title": "Monsoon Lantern",
+      "track_type": "song",
+      "album": "Kaveri Pulse (Indie Sessions)",
+      "film_or_project": "Indie Sessions",
+      "language": "Tamil",
+      "album_release_date": "2026-06-15",
+      "composer": "Isai Collective",
+      "credited_artists": [
+        "Arjun V."
+      ],
+      "notes": "Royalty-free Kalyani-inspired indie melody with warm electric keys",
+      "asset_path": "audio/02_monsoon_lantern.mp3",
+      "duration_ms": 36000,
+      "default_lrc": "[00:02.00]Raindrops humming on the rooftop tin\n[00:10.00]Lanterns glowing through the indigo night\n[00:18.00]Analog chords drift across the courtyard\n[00:26.00]Monsoon lanterns carry us home"
+    },
+    {
+      "id": 3,
+      "title": "Chai & Vinyl",
+      "track_type": "song",
+      "album": "Kaveri Pulse (Indie Sessions)",
+      "film_or_project": "Indie Sessions",
+      "language": "Tamil",
+      "album_release_date": "2026-06-15",
+      "composer": "Isai Collective",
+      "credited_artists": [
+        "Kavya M."
+      ],
+      "notes": "Royalty-free chill lo-fi & studio bell groove",
+      "asset_path": "audio/03_chai_and_vinyl.mp3",
+      "duration_ms": 34000,
+      "default_lrc": "[00:02.00]Warm vinyl crackle in the corner room\n[00:10.00]Steaming spiced chai by the console light\n[00:18.00]Slow chords spin on a quiet evening"
+    },
+    {
+      "id": 4,
+      "title": "Coastline Echo",
+      "track_type": "version",
+      "album": "Kaveri Pulse (Indie Sessions)",
+      "film_or_project": "Indie Sessions",
+      "language": "Tamil",
+      "album_release_date": "2026-06-15",
+      "composer": "Isai Collective",
+      "credited_artists": [
+        "Ananya R."
+      ],
+      "notes": "Royalty-free unplugged acoustic coastline reprise",
+      "asset_path": "audio/04_coastline_echo.mp3",
+      "duration_ms": 34000,
+      "default_lrc": "[00:02.00]Waves pull gently past the harbor wall\n[00:11.00]Soft strings echo in the evening air\n[00:20.00]Coastline echoes fade into the tide"
+    },
+    {
+      "id": 5,
+      "title": "Oscillator Hearts",
+      "track_type": "song",
+      "album": "Analog Brass & Synths",
+      "film_or_project": "Console Works",
+      "language": "Tamil",
+      "album_release_date": "2026-07-10",
+      "composer": "Karthik & Isai Collective",
+      "credited_artists": [
+        "Karthik S."
+      ],
+      "notes": "Royalty-free analog synthwave song with detuned pads",
+      "asset_path": "audio/05_oscillator_hearts.mp3",
+      "duration_ms": 36000,
+      "default_lrc": "[00:02.00]Neon dials flicker on the studio rack\n[00:10.00]Sub bass rolling like midnight thunder\n[00:18.00]Oscillator hearts beating in sync"
+    },
+    {
+      "id": 6,
+      "title": "Filter Sweep",
+      "track_type": "theme",
+      "album": "Analog Brass & Synths",
+      "film_or_project": "Console Works",
+      "language": "Tamil",
+      "album_release_date": "2026-07-10",
+      "composer": "Karthik & Isai Collective",
+      "credited_artists": [],
+      "notes": "Royalty-free high-energy promo theme in Phrygian mode",
+      "asset_path": "audio/06_filter_sweep.mp3",
+      "duration_ms": 34000,
+      "default_lrc": null
+    },
+    {
+      "id": 7,
+      "title": "Velvet Patchbay",
+      "track_type": "song",
+      "album": "Analog Brass & Synths",
+      "film_or_project": "Console Works",
+      "language": "Tamil",
+      "album_release_date": "2026-07-10",
+      "composer": "Karthik & Isai Collective",
+      "credited_artists": [
+        "Rohan P."
+      ],
+      "notes": "Royalty-free funky synth-bass track",
+      "asset_path": "audio/07_velvet_patchbay.mp3",
+      "duration_ms": 36000,
+      "default_lrc": "[00:02.00]Patch cables routed through the velvet bus\n[00:10.00]Tight snare snaps on two and four\n[00:19.00]Every groove locked inside the console"
+    },
+    {
+      "id": 8,
+      "title": "Modular Horizon",
+      "track_type": "bgm",
+      "album": "Analog Brass & Synths",
+      "film_or_project": "Console Works",
+      "language": "Tamil",
+      "album_release_date": "2026-07-10",
+      "composer": "Karthik & Isai Collective",
+      "credited_artists": [],
+      "notes": "Royalty-free driving modular score cue",
+      "asset_path": "audio/08_modular_horizon.mp3",
+      "duration_ms": 34000,
+      "default_lrc": null
+    },
+    {
+      "id": 9,
+      "title": "Zero Hour Motif",
+      "track_type": "bgm",
+      "album": "Midnight DAW: Original Score",
+      "film_or_project": "Nightfall Score",
+      "language": "Instrumental",
+      "album_release_date": "2026-08-05",
+      "composer": "Isai Score Lab",
+      "credited_artists": [],
+      "notes": "Royalty-free tense harmonic-minor cinematic BGM",
+      "asset_path": "audio/09_zero_hour_motif.mp3",
+      "duration_ms": 36000,
+      "default_lrc": null
+    },
+    {
+      "id": 10,
+      "title": "Neon Rain Chase",
+      "track_type": "bgm",
+      "album": "Midnight DAW: Original Score",
+      "film_or_project": "Nightfall Score",
+      "language": "Instrumental",
+      "album_release_date": "2026-08-05",
+      "composer": "Isai Score Lab",
+      "credited_artists": [],
+      "notes": "Royalty-free fast-paced action score cue",
+      "asset_path": "audio/10_neon_rain_chase.mp3",
+      "duration_ms": 34000,
+      "default_lrc": null
+    },
+    {
+      "id": 11,
+      "title": "Shadowed Alley",
+      "track_type": "bgm",
+      "album": "Midnight DAW: Original Score",
+      "film_or_project": "Nightfall Score",
+      "language": "Instrumental",
+      "album_release_date": "2026-08-05",
+      "composer": "Isai Score Lab",
+      "credited_artists": [],
+      "notes": "Royalty-free suspense score with deep sub-bass and chimes",
+      "asset_path": "audio/11_shadowed_alley.mp3",
+      "duration_ms": 34000,
+      "default_lrc": null
+    },
+    {
+      "id": 12,
+      "title": "Dawn Over Harbour",
+      "track_type": "bgm",
+      "album": "Midnight DAW: Original Score",
+      "film_or_project": "Nightfall Score",
+      "language": "Instrumental",
+      "album_release_date": "2026-08-05",
+      "composer": "Isai Score Lab",
+      "credited_artists": [],
+      "notes": "Royalty-free uplifting Lydian orchestral-synth score",
+      "asset_path": "audio/12_dawn_over_harbour.mp3",
+      "duration_ms": 38000,
+      "default_lrc": null
+    },
+    {
+      "id": 13,
+      "title": "Marina Skyline",
+      "track_type": "song",
+      "album": "Marina Drift (Motion Soundtrack)",
+      "film_or_project": "Marina Drift",
+      "language": "Telugu",
+      "album_release_date": "2026-09-12",
+      "composer": "Vikram Rao & Isai Collective",
+      "credited_artists": [
+        "Vikram Rao",
+        "Neha K."
+      ],
+      "notes": "Royalty-free bright Telugu-inspired youth anthem",
+      "asset_path": "audio/13_marina_skyline.mp3",
+      "duration_ms": 36000,
+      "default_lrc": "[00:02.00]City lights stretch down the Marina curve\n[00:10.00]Windows rolled down to the summer breeze\n[00:18.00]Turn the skyline up till dawn arrives"
+    },
+    {
+      "id": 14,
+      "title": "Midnight Auto",
+      "track_type": "song",
+      "album": "Marina Drift (Motion Soundtrack)",
+      "film_or_project": "Marina Drift",
+      "language": "Telugu",
+      "album_release_date": "2026-09-12",
+      "composer": "Vikram Rao & Isai Collective",
+      "credited_artists": [
+        "Vikram Rao"
+      ],
+      "notes": "Royalty-free energetic street percussion & synth lead song",
+      "asset_path": "audio/14_midnight_auto.mp3",
+      "duration_ms": 34000,
+      "default_lrc": "[00:02.00]Headlights cutting through the avenue\n[00:10.00]Bassline bouncing off the boulevard\n[00:18.00]Midnight ride never slows its stride"
+    },
+    {
+      "id": 15,
+      "title": "Sunroof Groove",
+      "track_type": "song",
+      "album": "Marina Drift (Motion Soundtrack)",
+      "film_or_project": "Marina Drift",
+      "language": "Telugu",
+      "album_release_date": "2026-09-12",
+      "composer": "Vikram Rao & Isai Collective",
+      "credited_artists": [
+        "Neha K."
+      ],
+      "notes": "Royalty-free upbeat tropical pluck roadtrip song",
+      "asset_path": "audio/15_sunroof_groove.mp3",
+      "duration_ms": 36000,
+      "default_lrc": "[00:02.00]Open sky above the coastal road\n[00:10.00]Bright synth plucks ride the afternoon\n[00:18.00]Sunroof groove all weekend long"
+    },
+    {
+      "id": 16,
+      "title": "Drift Anthem",
+      "track_type": "theme",
+      "album": "Marina Drift (Motion Soundtrack)",
+      "film_or_project": "Marina Drift",
+      "language": "Telugu",
+      "album_release_date": "2026-09-12",
+      "composer": "Vikram Rao & Isai Collective",
+      "credited_artists": [],
+      "notes": "Royalty-free heroic trailer & title theme",
+      "asset_path": "audio/16_drift_anthem.mp3",
+      "duration_ms": 34000,
+      "default_lrc": null
+    },
+    {
+      "id": 17,
+      "title": "Jasmine Breeze (Unplugged)",
+      "track_type": "version",
+      "album": "Courtyard Unplugged",
+      "film_or_project": "Courtyard Sessions",
+      "language": "Malayalam",
+      "album_release_date": "2026-10-03",
+      "composer": "Meera Nair & Isai Collective",
+      "credited_artists": [
+        "Meera Nair"
+      ],
+      "notes": "Royalty-free gentle unplugged Malayalam courtyard ballad",
+      "asset_path": "audio/17_jasmine_breeze.mp3",
+      "duration_ms": 36000,
+      "default_lrc": "[00:02.00]Evening jasmine scents the open verandah\n[00:11.00]Gentle harp notes drift across the rain\n[00:20.00]Quiet melodies rest until morning"
+    },
+    {
+      "id": 18,
+      "title": "Backwater Lullaby",
+      "track_type": "version",
+      "album": "Courtyard Unplugged",
+      "film_or_project": "Courtyard Sessions",
+      "language": "Malayalam",
+      "album_release_date": "2026-10-03",
+      "composer": "Meera Nair & Isai Collective",
+      "credited_artists": [
+        "Meera Nair"
+      ],
+      "notes": "Royalty-free tranquil ambient lullaby version",
+      "asset_path": "audio/18_backwater_lullaby.mp3",
+      "duration_ms": 36000,
+      "default_lrc": "[00:02.00]Lantern reflections float on still water\n[00:12.00]Soft flutes whisper across the palms"
+    },
+    {
+      "id": 19,
+      "title": "Porchlight Acoustic",
+      "track_type": "song",
+      "album": "Courtyard Unplugged",
+      "film_or_project": "Courtyard Sessions",
+      "language": "Malayalam",
+      "album_release_date": "2026-10-03",
+      "composer": "Meera Nair & Isai Collective",
+      "credited_artists": [
+        "Dev M.",
+        "Meera Nair"
+      ],
+      "notes": "Royalty-free warm acoustic song with subtle shaker groove",
+      "asset_path": "audio/19_porchlight_acoustic.mp3",
+      "duration_ms": 36000,
+      "default_lrc": "[00:02.00]Golden porchlight glows against the dusk\n[00:10.00]Open chords ring true in stereo warmth\n[00:19.00]Sing along beneath the monsoon stars"
+    },
+    {
+      "id": 20,
+      "title": "Evening Raga (Sped-Up)",
+      "track_type": "version",
+      "album": "Courtyard Unplugged",
+      "film_or_project": "Courtyard Sessions",
+      "language": "Malayalam",
+      "album_release_date": "2026-10-03",
+      "composer": "Meera Nair & Isai Collective",
+      "credited_artists": [
+        "Dev M."
+      ],
+      "notes": "Royalty-free fast-tempo sped-up edit for high energy",
+      "asset_path": "audio/20_evening_raga_fast.mp3",
+      "duration_ms": 32000,
+      "default_lrc": null
+    },
+    {
+      "id": 21,
+      "title": "Curtain Riser Theme",
+      "track_type": "theme",
+      "album": "Spotlight Arena Anthems",
+      "film_or_project": "Arena Tour",
+      "language": "Instrumental",
+      "album_release_date": "2026-11-01",
+      "composer": "Isai Collective",
+      "credited_artists": [],
+      "notes": "Royalty-free stadium entrance theme",
+      "asset_path": "audio/21_curtain_riser.mp3",
+      "duration_ms": 36000,
+      "default_lrc": null
+    },
+    {
+      "id": 22,
+      "title": "Titanium Pulse",
+      "track_type": "bgm",
+      "album": "Spotlight Arena Anthems",
+      "film_or_project": "Arena Tour",
+      "language": "Instrumental",
+      "album_release_date": "2026-11-01",
+      "composer": "Isai Collective",
+      "credited_artists": [],
+      "notes": "Royalty-free heavy sub-bass & percussive arena BGM",
+      "asset_path": "audio/22_titanium_pulse.mp3",
+      "duration_ms": 34000,
+      "default_lrc": null
+    },
+    {
+      "id": 23,
+      "title": "Golden Encore",
+      "track_type": "song",
+      "album": "Spotlight Arena Anthems",
+      "film_or_project": "Arena Tour",
+      "language": "Instrumental",
+      "album_release_date": "2026-11-01",
+      "composer": "Isai Collective",
+      "credited_artists": [
+        "Arjun V.",
+        "Vikram Rao"
+      ],
+      "notes": "Royalty-free celebratory stadium finale song",
+      "asset_path": "audio/23_golden_encore.mp3",
+      "duration_ms": 36000,
+      "default_lrc": "[00:02.00]Spotlights rising over fifty thousand hands\n[00:10.00]Big brass chords lift the rafters high\n[00:18.00]One last chorus for the golden encore"
+    },
+    {
+      "id": 24,
+      "title": "Final Curtain Theme",
+      "track_type": "theme",
+      "album": "Spotlight Arena Anthems",
+      "film_or_project": "Arena Tour",
+      "language": "Instrumental",
+      "album_release_date": "2026-11-01",
+      "composer": "Isai Collective",
+      "credited_artists": [],
+      "notes": "Royalty-free triumphant closing title theme",
+      "asset_path": "audio/24_final_curtain.mp3",
+      "duration_ms": 38000,
+      "default_lrc": null
+    }
+  ]
+}

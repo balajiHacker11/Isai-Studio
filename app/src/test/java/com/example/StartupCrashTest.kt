@@ -36,11 +36,24 @@ class StartupCrashTest {
     val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun catalogJsonLoadsCleanly() {
+    fun catalogJsonAndBundledMp3AssetsLoadCleanly() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val repo = CatalogRepository(context)
-        assertEquals(12, repo.albums.size)
-        assertEquals(110, repo.tracks.size)
+        assertEquals(6, repo.albums.size)
+        assertEquals(24, repo.tracks.size)
+        repo.tracks.forEach { track ->
+            val assetPath = track.assetPath
+            assertNotNull("Track ${track.title} must have bundled assetPath", assetPath)
+            assertTrue("Bundled asset must be .mp3", assetPath!!.endsWith(".mp3"))
+            context.assets.open(assetPath).use { input ->
+                val header = ByteArray(3)
+                val read = input.read(header)
+                assertEquals(3, read)
+                val isId3 = header[0] == 'I'.code.toByte() && header[1] == 'D'.code.toByte() && header[2] == '3'.code.toByte()
+                val isMpegSync = (header[0].toInt() and 0xFF) == 0xFF && (header[1].toInt() and 0xE0) == 0xE0
+                assertTrue("Asset $assetPath must start with ID3 or MPEG sync bytes", isId3 || isMpegSync)
+            }
+        }
     }
 
     @Test
@@ -87,10 +100,10 @@ class StartupCrashTest {
         assertTrue(libRepo.observePlayHistory().first().any { it.trackNumber == sampleTrack.id.toLong() })
 
         val lyricsRepo: LyricsRepository = container.lyricsRepository
-        assertTrue(lyricsRepo.saveTrackLyrics(sampleTrack.id, "[00:01.00]Katchi Sera").isSuccess)
+        assertTrue(lyricsRepo.saveTrackLyrics(sampleTrack.id, "[00:01.00]Kaveri Dawn").isSuccess)
         val savedLyrics = lyricsRepo.observeTrackLyrics(sampleTrack.id).first()
         assertNotNull(savedLyrics)
-        assertEquals("[00:01.00]Katchi Sera", savedLyrics?.lrcContent)
+        assertEquals("[00:01.00]Kaveri Dawn", savedLyrics?.lrcContent)
 
         val prefsRepo: PreferencesRepository = container.preferencesRepository
         val customPrefs = UserPreferences(
@@ -110,8 +123,8 @@ class StartupCrashTest {
         val candidates = listOf(
             AudioImportCandidate(
                 uri = Uri.parse("content://media/external/audio/1"),
-                displayName = "01_KatchiSera_320kbps.mp3",
-                metadata = AudioFileMetadata(title = null, artist = "Sai Abhyankkar", album = null, durationMs = 195_000L)
+                displayName = "01_KaveriDawn_320kbps.mp3",
+                metadata = AudioFileMetadata(title = null, artist = "Isai Collective", album = null, durationMs = 36_000L)
             ),
             AudioImportCandidate(
                 uri = Uri.parse("content://media/external/audio/2"),
@@ -137,7 +150,7 @@ class StartupCrashTest {
     }
 
     @Test
-    fun studioAudioSynthGeneratesValidWavForCatalogTracks() {
+    fun studioAudioSynthGeneratesValidWavForCustomFallback() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val repo = CatalogRepository(context)
         val firstTrack = repo.tracks.first()
