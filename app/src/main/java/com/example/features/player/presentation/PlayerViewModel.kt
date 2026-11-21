@@ -14,7 +14,6 @@ import com.example.core.player.PlaybackCoordinator
 import com.example.core.player.PlaybackSnapshot
 import com.example.features.library.data.LibraryRepository
 import com.example.features.player.data.LyricsRepository
-import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -40,8 +39,7 @@ class PlayerViewModel(
     private val localAudioStore: LocalAudioStore,
     private val libraryRepository: LibraryRepository,
     private val lyricsRepository: LyricsRepository,
-    private val parseLrcUseCase: ParseLrcUseCase,
-    private val currentUserId: String
+    private val parseLrcUseCase: ParseLrcUseCase
 ) : ViewModel() {
 
     val eqPresets: List<EqPreset> = listOf(
@@ -84,14 +82,11 @@ class PlayerViewModel(
             if (trackId == null) {
                 flowOf("")
             } else {
-                lyricsRepository.observeTrackLyrics(currentUserId, trackId)
+                lyricsRepository.observeTrackLyrics(trackId)
                     .map { it?.lrcContent ?: "" }
                     .catch { error ->
-                        val firestoreError = generateSequence(error) { it.cause }
-                            .filterIsInstance<FirebaseFirestoreException>()
-                            .firstOrNull()
-                        if (firestoreError == null && error is CancellationException) throw error
-                        Log.w("PlayerVM", "Error observing track lyrics", firestoreError ?: error)
+                        if (error is CancellationException) throw error
+                        Log.w("PlayerVM", "Error observing track lyrics", error)
                         emit("")
                     }
             }
@@ -116,7 +111,7 @@ class PlayerViewModel(
         viewModelScope.launch {
             playbackCoordinator.trackStartedEvents.collect { track ->
                 if (!privateSessionEnabled) {
-                    libraryRepository.recordPlayHistory(currentUserId, track)
+                    libraryRepository.recordPlayHistory(track)
                 }
             }
         }
@@ -209,7 +204,7 @@ class PlayerViewModel(
 
     fun saveLyrics(trackId: Int, lrcContent: String) {
         viewModelScope.launch {
-            lyricsRepository.saveTrackLyrics(currentUserId, trackId, lrcContent).fold(
+            lyricsRepository.saveTrackLyrics(trackId, lrcContent).fold(
                 onSuccess = { _snackbarMessages.tryEmit("Synced LRC lyrics saved") },
                 onFailure = { err -> _snackbarMessages.tryEmit(err.localizedMessage ?: "Failed to save lyrics") }
             )

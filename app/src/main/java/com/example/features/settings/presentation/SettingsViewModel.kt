@@ -12,7 +12,6 @@ import com.example.core.model.Track
 import com.example.core.model.UserPreferences
 import com.example.features.catalog.data.CatalogRepository
 import com.example.features.settings.data.PreferencesRepository
-import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -27,23 +26,19 @@ class SettingsViewModel(
     private val preferencesRepository: PreferencesRepository,
     private val localAudioStore: LocalAudioStore,
     private val catalogRepository: CatalogRepository,
-    private val autoMatchAudioFilesUseCase: AutoMatchAudioFilesUseCase,
-    private val currentUserId: String
+    private val autoMatchAudioFilesUseCase: AutoMatchAudioFilesUseCase
 ) : ViewModel() {
 
-    val preferences: StateFlow<UserPreferences> = preferencesRepository.observePreferences(currentUserId)
+    val preferences: StateFlow<UserPreferences> = preferencesRepository.observePreferences()
         .catch { error ->
-            val firestoreError = generateSequence(error) { it.cause }
-                .filterIsInstance<FirebaseFirestoreException>()
-                .firstOrNull()
-            if (firestoreError == null && error is CancellationException) throw error
-            Log.w("SettingsVM", "Error observing preferences", firestoreError ?: error)
-            emit(UserPreferences(userId = currentUserId))
+            if (error is CancellationException) throw error
+            Log.w("SettingsVM", "Error observing preferences", error)
+            emit(UserPreferences())
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000L),
-            initialValue = UserPreferences(userId = currentUserId)
+            initialValue = UserPreferences()
         )
 
     val linkedAudio: StateFlow<Map<Int, LinkedAudioEntry>> = localAudioStore.linkedAudioFlow
@@ -57,9 +52,9 @@ class SettingsViewModel(
     val messages: SharedFlow<String> = _messages.asSharedFlow()
 
     fun updatePreferences(transform: (UserPreferences) -> UserPreferences) {
-        val updated = transform(preferences.value).copy(userId = currentUserId)
+        val updated = transform(preferences.value)
         viewModelScope.launch {
-            preferencesRepository.savePreferences(currentUserId, updated).onFailure { err ->
+            preferencesRepository.savePreferences(updated).onFailure { err ->
                 _messages.tryEmit(err.localizedMessage ?: "Could not save setting")
             }
         }

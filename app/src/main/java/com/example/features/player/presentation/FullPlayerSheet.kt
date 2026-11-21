@@ -99,7 +99,7 @@ fun FullPlayerSheet(
     isLiked: Boolean,
     preferences: UserPreferences,
     onToggleLike: (Track) -> Unit,
-    onSaveEqToCloud: (String, List<Int>) -> Unit,
+    onSaveEqSettings: (String, List<Int>) -> Unit,
     onMinimize: () -> Unit
 ) {
     BackHandler { onMinimize() }
@@ -561,11 +561,11 @@ fun FullPlayerSheet(
             activePreset = activeEqPreset,
             onDismiss = {
                 showEqSheet = false
-                onSaveEqToCloud(activeEqPreset, eqState.bandLevelsMb)
+                onSaveEqSettings(activeEqPreset, eqState.bandLevelsMb)
             },
             onSelectPreset = { preset ->
                 playerViewModel.selectEqPreset(preset)
-                onSaveEqToCloud(preset.name, preset.bandsMb)
+                onSaveEqSettings(preset.name, preset.bandsMb)
             },
             onBandChanged = { idx, level -> playerViewModel.setEqBand(idx, level) }
         )

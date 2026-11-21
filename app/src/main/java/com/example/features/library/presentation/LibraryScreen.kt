@@ -490,7 +490,7 @@ fun LibraryScreen(
         AlertDialog(
             onDismissRequest = { deletingPlaylist = null },
             title = { Text("Delete Playlist?") },
-            text = { Text("Remove \"${playlist.name}\" from your cloud library? Your catalog tracks will remain intact.") },
+            text = { Text("Remove \"${playlist.name}\" from your library? Your catalog tracks will remain intact.") },
             confirmButton = {
                 Button(
                     onClick = {

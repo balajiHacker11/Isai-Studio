@@ -24,21 +24,14 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-36 platforms;android-36.1 build-tools;36.0.0'
 
-      - name: Prepare debug keystore & Firebase config
+      - name: Prepare debug keystore & optional env
         env:
-          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
           DOT_ENV: ${{ secrets.DOT_ENV }}
         run: |
           if [ -f debug.keystore.base64 ]; then
             base64 -d debug.keystore.base64 > debug.keystore
             mkdir -p "$HOME/.android"
             cp debug.keystore "$HOME/.android/debug.keystore"
-          fi
-          if [ -n "$GOOGLE_SERVICES_JSON_BASE64" ]; then
-            echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > app/google-services.json
-          fi
-          if [ ! -f app/google-services.json ]; then
-            echo "::warning::app/google-services.json is missing! Add app/google-services.json or set GOOGLE_SERVICES_JSON_BASE64 in GitHub Secrets so Google Sign-In and Firestore work in the built APK."
           fi
           if [ -n "$DOT_ENV" ]; then
             printf '%s\n' "$DOT_ENV" > .env

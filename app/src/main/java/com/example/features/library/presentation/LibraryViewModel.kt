@@ -9,7 +9,6 @@ import com.example.core.model.Track
 import com.example.core.model.UiState
 import com.example.core.model.UserPlaylist
 import com.example.features.library.data.LibraryRepository
-import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,23 +24,18 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class LibraryViewModel(
-    private val repository: LibraryRepository,
-    private val currentUserId: String
+    private val repository: LibraryRepository
 ) : ViewModel() {
 
     val likedTracksState: StateFlow<UiState<List<LikedTrack>>> =
-        repository.observeLikedTracks(currentUserId)
+        repository.observeLikedTracks()
             .map<List<LikedTrack>, UiState<List<LikedTrack>>> { list ->
-                UiState.Success(list.sortedByDescending { it.createdAt?.seconds ?: 0L })
+                UiState.Success(list.sortedByDescending { it.createdAtMs })
             }
             .catch { error ->
-                val firestoreError = generateSequence(error) { it.cause }
-                    .filterIsInstance<FirebaseFirestoreException>()
-                    .firstOrNull()
-                if (firestoreError == null && error is CancellationException) throw error
-                val rootError = firestoreError ?: error
-                Log.w("LibraryVM", "Error observing liked tracks", rootError)
-                emit(UiState.Error(rootError.localizedMessage ?: "Failed to load liked tracks"))
+                if (error is CancellationException) throw error
+                Log.w("LibraryVM", "Error observing liked tracks", error)
+                emit(UiState.Error(error.localizedMessage ?: "Failed to load liked tracks"))
             }
             .stateIn(
                 scope = viewModelScope,
@@ -63,18 +57,14 @@ class LibraryViewModel(
         )
 
     val playlistsState: StateFlow<UiState<List<UserPlaylist>>> =
-        repository.observePlaylists(currentUserId)
+        repository.observePlaylists()
             .map<List<UserPlaylist>, UiState<List<UserPlaylist>>> { list ->
-                UiState.Success(list.sortedByDescending { it.updatedAt?.seconds ?: 0L })
+                UiState.Success(list.sortedByDescending { it.updatedAtMs })
             }
             .catch { error ->
-                val firestoreError = generateSequence(error) { it.cause }
-                    .filterIsInstance<FirebaseFirestoreException>()
-                    .firstOrNull()
-                if (firestoreError == null && error is CancellationException) throw error
-                val rootError = firestoreError ?: error
-                Log.w("LibraryVM", "Error observing playlists", rootError)
-                emit(UiState.Error(rootError.localizedMessage ?: "Failed to load playlists"))
+                if (error is CancellationException) throw error
+                Log.w("LibraryVM", "Error observing playlists", error)
+                emit(UiState.Error(error.localizedMessage ?: "Failed to load playlists"))
             }
             .stateIn(
                 scope = viewModelScope,
@@ -83,18 +73,14 @@ class LibraryViewModel(
             )
 
     val historyState: StateFlow<UiState<List<PlayHistoryEntry>>> =
-        repository.observePlayHistory(currentUserId)
+        repository.observePlayHistory()
             .map<List<PlayHistoryEntry>, UiState<List<PlayHistoryEntry>>> { list ->
                 UiState.Success(list)
             }
             .catch { error ->
-                val firestoreError = generateSequence(error) { it.cause }
-                    .filterIsInstance<FirebaseFirestoreException>()
-                    .firstOrNull()
-                if (firestoreError == null && error is CancellationException) throw error
-                val rootError = firestoreError ?: error
-                Log.w("LibraryVM", "Error observing play history", rootError)
-                emit(UiState.Error(rootError.localizedMessage ?: "Failed to load history"))
+                if (error is CancellationException) throw error
+                Log.w("LibraryVM", "Error observing play history", error)
+                emit(UiState.Error(error.localizedMessage ?: "Failed to load history"))
             }
             .stateIn(
                 scope = viewModelScope,
@@ -119,7 +105,7 @@ class LibraryViewModel(
     fun toggleLike(track: Track) {
         val currentlyLiked = likedTrackIds.value.contains(track.id)
         viewModelScope.launch {
-            repository.toggleLike(currentUserId, track, currentlyLiked).fold(
+            repository.toggleLike(track, currentlyLiked).fold(
                 onSuccess = { nowLiked ->
                     _snackbarMessages.tryEmit(
                         if (nowLiked) "Added \"${track.title}\" to Liked Songs"
@@ -141,7 +127,7 @@ class LibraryViewModel(
     ) {
         viewModelScope.launch {
             val initialIds = listOfNotNull(initialTrackId)
-            repository.createPlaylist(currentUserId, name, description, coverKey, initialIds).fold(
+            repository.createPlaylist(name, description, coverKey, initialIds).fold(
                 onSuccess = {
                     _snackbarMessages.tryEmit("Created playlist \"$name\"")
                 },
@@ -160,7 +146,7 @@ class LibraryViewModel(
         }
         val updated = playlist.trackIds + trackNum
         viewModelScope.launch {
-            repository.updatePlaylistTracks(currentUserId, playlist.id, updated).fold(
+            repository.updatePlaylistTracks(playlist.id, updated).fold(
                 onSuccess = {
                     _snackbarMessages.tryEmit("Added \"${track.title}\" to ${playlist.name}")
                 },
@@ -174,7 +160,7 @@ class LibraryViewModel(
     fun removeTrackFromPlaylist(playlist: UserPlaylist, trackId: Int) {
         val updated = playlist.trackIds.filterNot { it == trackId.toLong() }
         viewModelScope.launch {
-            repository.updatePlaylistTracks(currentUserId, playlist.id, updated)
+            repository.updatePlaylistTracks(playlist.id, updated)
         }
     }
 
@@ -184,13 +170,13 @@ class LibraryViewModel(
         val moved = mutable.removeAt(fromIndex)
         mutable.add(toIndex, moved)
         viewModelScope.launch {
-            repository.updatePlaylistTracks(currentUserId, playlist.id, mutable)
+            repository.updatePlaylistTracks(playlist.id, mutable)
         }
     }
 
     fun renamePlaylist(playlist: UserPlaylist, newName: String, newDescription: String) {
         viewModelScope.launch {
-            repository.renamePlaylist(currentUserId, playlist.id, newName, newDescription).fold(
+            repository.renamePlaylist(playlist.id, newName, newDescription).fold(
                 onSuccess = { _snackbarMessages.tryEmit("Updated playlist") },
                 onFailure = { err -> _snackbarMessages.tryEmit(err.localizedMessage ?: "Update failed") }
             )
@@ -199,7 +185,7 @@ class LibraryViewModel(
 
     fun deletePlaylist(playlist: UserPlaylist) {
         viewModelScope.launch {
-            repository.deletePlaylist(currentUserId, playlist.id).fold(
+            repository.deletePlaylist(playlist.id).fold(
                 onSuccess = { _snackbarMessages.tryEmit("Deleted \"${playlist.name}\"") },
                 onFailure = { err -> _snackbarMessages.tryEmit(err.localizedMessage ?: "Delete failed") }
             )

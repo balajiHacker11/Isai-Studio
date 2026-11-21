@@ -21,14 +21,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.DeleteSweep
 import androidx.compose.material.icons.rounded.Equalizer
 import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.GraphicEq
+import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material.icons.rounded.VisibilityOff
@@ -59,29 +58,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.example.core.model.AccentTheme
-import com.example.core.model.UserPreferences
 import com.example.core.player.PlaybackSnapshot
 import com.example.shared.components.formatDurationMs
 import com.example.ui.theme.CoralPrimary
 import com.example.ui.theme.CyanPrimary
 import com.example.ui.theme.GoldPrimary
 import com.example.ui.theme.VioletPrimary
-import com.google.firebase.auth.FirebaseUser
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SettingsScreen(
-    currentUser: FirebaseUser,
     settingsViewModel: SettingsViewModel,
     playbackSnapshot: PlaybackSnapshot,
     activeEqPreset: String,
     onOpenEqualizer: () -> Unit,
     onOpenSleepTimer: () -> Unit,
     onBulkAutoMatchClick: () -> Unit,
-    onReplayIntroClick: () -> Unit,
-    onSignOutClick: () -> Unit
+    onReplayIntroClick: () -> Unit
 ) {
     val preferences by settingsViewModel.preferences.collectAsStateWithLifecycle()
     val linkedAudio by settingsViewModel.linkedAudio.collectAsStateWithLifecycle()
@@ -106,7 +100,7 @@ fun SettingsScreen(
             }
         }
 
-        // Google Account Card
+        // Offline Studio Identity Card
         item {
             Surface(
                 color = MaterialTheme.colorScheme.surfaceVariant,
@@ -118,66 +112,45 @@ fun SettingsScreen(
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (currentUser.photoUrl != null) {
-                            AsyncImage(
-                                model = currentUser.photoUrl,
-                                contentDescription = currentUser.displayName ?: "Profile",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(54.dp)
-                                    .clip(CircleShape)
+                        Box(
+                            modifier = Modifier
+                                .size(54.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.LibraryMusic,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(28.dp)
                             )
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .size(54.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primaryContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Person,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(28.dp)
-                                )
-                            }
                         }
                         Spacer(Modifier.width(14.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = currentUser.displayName?.ifBlank { "Isai Listener" } ?: "Isai Listener",
+                                text = "Isai Studio",
                                 style = MaterialTheme.typography.titleLarge,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = currentUser.email ?: "Signed in with Google",
+                                text = "110-track Sai Abhyankkar catalog • Saved locally on device",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
+                                maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        OutlinedButton(
-                            onClick = onReplayIntroClick,
-                            modifier = Modifier.weight(1f).testTag("settings_replay_intro")
-                        ) {
-                            Icon(Icons.Rounded.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text("6-Photo Intro")
-                        }
-                        OutlinedButton(
-                            onClick = onSignOutClick,
-                            modifier = Modifier.weight(1f).testTag("sign_out_button")
-                        ) {
-                            Icon(Icons.AutoMirrored.Rounded.Logout, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text("Sign Out")
-                        }
+                    OutlinedButton(
+                        onClick = onReplayIntroClick,
+                        modifier = Modifier.fillMaxWidth().testTag("settings_replay_intro")
+                    ) {
+                        Icon(Icons.Rounded.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Replay 6-Photo Intro")
                     }
                 }
             }
@@ -407,7 +380,7 @@ fun SettingsScreen(
 
                 SettingsToggleRow(
                     title = "Private Listening Session",
-                    subtitle = "Pause cloud play-history logging while active",
+                    subtitle = "Pause play-history logging while active",
                     checked = preferences.privateSessionEnabled,
                     onCheckedChange = settingsViewModel::setPrivateSession,
                     testTag = "settings_private_session_switch"

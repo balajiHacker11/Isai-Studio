@@ -419,7 +419,7 @@ fun LrcEditorDialog(
                 enabled = text.isNotBlank(),
                 modifier = Modifier.testTag("lrc_save_button")
             ) {
-                Text("Save to Cloud")
+                Text("Save Lyrics")
             }
         },
         dismissButton = {

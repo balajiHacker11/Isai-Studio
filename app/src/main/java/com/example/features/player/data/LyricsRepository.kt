@@ -1,74 +1,52 @@
 package com.example.features.player.data
 
-import com.example.core.firebase.OperationType
-import com.example.core.firebase.handleFirestoreError
+import android.content.Context
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import com.example.core.local.studioLibraryDataStore
 import com.example.core.model.TrackLyrics
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.snapshots
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.tasks.await
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-class LyricsRepository(
-    private val db: FirebaseFirestore?,
-    private val auth: FirebaseAuth?
-) {
-    fun observeTrackLyrics(userId: String, trackId: Int): Flow<TrackLyrics?> {
-        val firestore = db ?: return flowOf(null)
-        return firestore.collection("users").document(userId)
-            .collection("lyrics").document("track_$trackId")
-            .snapshots()
-            .map { snapshot ->
-                if (snapshot.exists()) {
-                    snapshot.toObject(TrackLyrics::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
-                } else {
-                    null
-                }
-            }
-    }
+class LyricsRepository(context: Context) {
+    private val dataStore = context.applicationContext.studioLibraryDataStore
+    private val json = Json { ignoreUnknownKeys = true }
+    private val lyricsMapKey = stringPreferencesKey("track_lyrics_map_json")
 
-    suspend fun saveTrackLyrics(userId: String, trackId: Int, lrcContent: String): Result<Unit> {
-        val firestore = db ?: return Result.failure(IllegalStateException("Firestore unavailable"))
+    fun observeTrackLyrics(trackId: Int): Flow<TrackLyrics?> =
+        dataStore.data.map { prefs ->
+            decodeMap(prefs[lyricsMapKey])[trackId]
+        }
+
+    suspend fun saveTrackLyrics(trackId: Int, lrcContent: String): Result<Unit> {
         val cleanContent = lrcContent.trim().take(15000)
         if (cleanContent.isEmpty()) {
             return Result.failure(IllegalArgumentException("Lyrics content cannot be empty"))
         }
-        val docId = "track_$trackId"
-        val path = "users/$userId/lyrics/$docId"
         return try {
-            val uid = auth?.currentUser?.uid
-                ?: throw IllegalStateException("User must be signed in with Google.")
-            check(uid == userId)
-            val docRef = firestore.collection("users").document(uid).collection("lyrics").document(docId)
-            val existing = docRef.get().await()
-            if (existing.exists()) {
-                docRef.update(
-                    mapOf(
-                        "lrcContent" to cleanContent,
-                        "updatedAt" to FieldValue.serverTimestamp()
-                    )
-                ).await()
-            } else {
-                docRef.set(
-                    mapOf(
-                        "userId" to uid,
-                        "trackNumber" to trackId.toLong(),
-                        "lrcContent" to cleanContent,
-                        "updatedAt" to FieldValue.serverTimestamp()
-                    )
-                ).await()
+            val entry = TrackLyrics(
+                trackNumber = trackId.toLong(),
+                lrcContent = cleanContent,
+                updatedAtMs = System.currentTimeMillis()
+            )
+            dataStore.edit { prefs ->
+                val updated = decodeMap(prefs[lyricsMapKey]).toMutableMap()
+                updated[trackId] = entry
+                prefs[lyricsMapKey] = json.encodeToString(updated)
             }
             Result.success(Unit)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            handleFirestoreError(e, OperationType.WRITE, path)
             Result.failure(e)
         }
+    }
+
+    private fun decodeMap(raw: String?): Map<Int, TrackLyrics> {
+        if (raw.isNullOrBlank()) return emptyMap()
+        return runCatching { json.decodeFromString<Map<Int, TrackLyrics>>(raw) }.getOrDefault(emptyMap())
     }
 }

@@ -161,9 +161,9 @@ object ArtistArtwork {
         ),
         ArtistStorySlide(
             index = 5,
-            chapter = "06 • YOUR CLOUD STUDIO",
-            title = "Curate Playlists Anywhere",
-            caption = "Sign in with Google to sync liked tracks, custom playlists, play history, and studio settings.",
+            chapter = "06 • YOUR LOCAL STUDIO",
+            title = "Curate Your Local Studio",
+            caption = "Curate playlists, favorite tracks, and customize your studio settings — saved privately on your device.",
             highlightTrackTitle = "FA FA FA • Mozhiye",
             artworkKey = "artist_stage_blazer",
             imageRes = R.drawable.artist_stage_blazer

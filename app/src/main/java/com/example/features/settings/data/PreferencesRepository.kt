@@ -1,59 +1,40 @@
 package com.example.features.settings.data
 
-import com.example.core.firebase.OperationType
-import com.example.core.firebase.handleFirestoreError
+import android.content.Context
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import com.example.core.local.studioLibraryDataStore
 import com.example.core.model.UserPreferences
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.snapshots
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.tasks.await
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-class PreferencesRepository(
-    private val db: FirebaseFirestore?,
-    private val auth: FirebaseAuth?
-) {
-    fun observePreferences(userId: String): Flow<UserPreferences> {
-        val firestore = db ?: return flowOf(UserPreferences(userId = userId))
-        return firestore.collection("users").document(userId)
-            .collection("preferences").document("settings")
-            .snapshots()
-            .map { snapshot ->
-                if (snapshot.exists()) {
-                    snapshot.toObject(UserPreferences::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
-                        ?: UserPreferences(userId = userId)
-                } else {
-                    UserPreferences(userId = userId)
-                }
-            }
-    }
+class PreferencesRepository(context: Context) {
+    private val dataStore = context.applicationContext.studioLibraryDataStore
+    private val json = Json { ignoreUnknownKeys = true }
+    private val prefsKey = stringPreferencesKey("studio_user_preferences_json")
 
-    suspend fun savePreferences(userId: String, prefs: UserPreferences): Result<Unit> {
-        val firestore = db ?: return Result.failure(IllegalStateException("Firestore unavailable"))
-        val path = "users/$userId/preferences/settings"
-        return try {
-            val uid = auth?.currentUser?.uid
-                ?: throw IllegalStateException("User must be signed in with Google.")
-            check(uid == userId)
-            val docRef = firestore.collection("users").document(uid)
-                .collection("preferences").document("settings")
-            val payload = prefs.toFirestoreMap(uid)
-            val existing = docRef.get().await()
-            if (existing.exists()) {
-                val updatePayload = payload.filterKeys { it != "userId" }
-                docRef.update(updatePayload).await()
+    fun observePreferences(): Flow<UserPreferences> =
+        dataStore.data.map { prefs ->
+            val raw = prefs[prefsKey]
+            if (raw.isNullOrBlank()) {
+                UserPreferences()
             } else {
-                docRef.set(payload).await()
+                runCatching { json.decodeFromString<UserPreferences>(raw) }.getOrDefault(UserPreferences())
+            }
+        }
+
+    suspend fun savePreferences(prefsValue: UserPreferences): Result<Unit> {
+        return try {
+            dataStore.edit { prefs ->
+                prefs[prefsKey] = json.encodeToString(prefsValue)
             }
             Result.success(Unit)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            handleFirestoreError(e, OperationType.WRITE, path)
             Result.failure(e)
         }
     }

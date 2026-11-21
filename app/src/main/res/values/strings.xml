@@ -4,9 +4,6 @@
     <string name="nav_search">Search</string>
     <string name="nav_library">Library</string>
     <string name="nav_settings">Studio</string>
-    <string name="sign_in_title">Enter Isai Studio</string>
-    <string name="sign_in_subtitle">Sync your playlists, liked tracks, synced lyrics, and audio console settings with your Google account.</string>
-    <string name="sign_in_with_google">Sign in with Google</string>
     <string name="intro_skip">Skip Intro</string>
     <string name="intro_enter_studio">Enter Studio</string>
     <string name="intro_next">Next Story</string>

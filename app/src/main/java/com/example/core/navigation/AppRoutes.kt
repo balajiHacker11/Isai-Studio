@@ -8,9 +8,6 @@ sealed interface AppRoute {
     data object Intro : AppRoute
 
     @Serializable
-    data object Auth : AppRoute
-
-    @Serializable
     data object Home : AppRoute
 
     @Serializable

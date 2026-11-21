@@ -55,9 +55,9 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -84,8 +84,6 @@ import com.example.core.model.AccentTheme
 import com.example.core.model.Track
 import com.example.core.model.UiState
 import com.example.core.navigation.AppRoute
-import com.example.features.auth.presentation.AuthScreen
-import com.example.features.auth.presentation.AuthViewModel
 import com.example.features.catalog.presentation.AlbumDetailScreen
 import com.example.features.catalog.presentation.ArtistDetailScreen
 import com.example.features.catalog.presentation.CatalogViewModel
@@ -107,7 +105,7 @@ import com.example.shared.components.LrcEditorDialog
 import com.example.shared.components.TrackContextBottomSheet
 import com.example.ui.theme.IsaiStudioTheme
 import com.example.ui.theme.ObsidianCanvas
-import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.launch
 
 private data class TopLevelNavItem(
     val route: AppRoute,
@@ -126,22 +124,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val windowSizeClass = calculateWindowSizeClass(this)
-            val authViewModel: AuthViewModel = viewModel(
-                factory = viewModelFactory {
-                    initializer {
-                        AuthViewModel(
-                            authRepository = container.authRepository,
-                            localAudioStore = container.localAudioStore
-                        )
-                    }
-                }
-            )
+            val scope = rememberCoroutineScope()
+            val introCompleted by container.localAudioStore.introCompletedFlow
+                .collectAsStateWithLifecycle(initialValue = null)
 
-            val introCompleted by authViewModel.introCompleted.collectAsStateWithLifecycle()
-            val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
-
-            when {
-                introCompleted == null -> {
+            when (introCompleted) {
+                null -> {
                     IsaiStudioTheme(darkTheme = true, accentTheme = AccentTheme.CORAL) {
                         Box(
                             modifier = Modifier
@@ -151,33 +139,21 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                introCompleted == false -> {
+                false -> {
                     IsaiStudioTheme(darkTheme = true, accentTheme = AccentTheme.CORAL) {
                         InteractiveIntroScreen(
-                            onFinishIntro = { authViewModel.completeIntro() }
+                            onFinishIntro = {
+                                scope.launch { container.localAudioStore.setIntroCompleted(true) }
+                            }
                         )
                     }
                 }
 
-                currentUser == null -> {
-                    IsaiStudioTheme(darkTheme = true, accentTheme = AccentTheme.CORAL) {
-                        AuthScreen(
-                            authViewModel = authViewModel,
-                            onReplayIntro = { authViewModel.replayIntro() }
-                        )
-                    }
-                }
-
-                else -> {
-                    val user = currentUser!!
-                    key(user.uid) {
-                        AuthenticatedStudioApp(
-                            user = user,
-                            container = container,
-                            windowSizeClass = windowSizeClass,
-                            onSignOut = { authViewModel.signOut(this) }
-                        )
-                    }
+                true -> {
+                    IsaiStudioApp(
+                        container = container,
+                        windowSizeClass = windowSizeClass
+                    )
                 }
             }
         }
@@ -185,16 +161,13 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun AuthenticatedStudioApp(
-    user: FirebaseUser,
+private fun IsaiStudioApp(
     container: AppContainer,
-    windowSizeClass: WindowSizeClass,
-    onSignOut: () -> Unit
+    windowSizeClass: WindowSizeClass
 ) {
     val context = LocalContext.current
 
     val catalogViewModel: CatalogViewModel = viewModel(
-        key = "catalog_${user.uid}",
         factory = viewModelFactory {
             initializer {
                 CatalogViewModel(
@@ -207,19 +180,16 @@ private fun AuthenticatedStudioApp(
     )
 
     val libraryViewModel: LibraryViewModel = viewModel(
-        key = "library_${user.uid}",
         factory = viewModelFactory {
             initializer {
                 LibraryViewModel(
-                    repository = container.libraryRepository,
-                    currentUserId = user.uid
+                    repository = container.libraryRepository
                 )
             }
         }
     )
 
     val playerViewModel: PlayerViewModel = viewModel(
-        key = "player_${user.uid}",
         factory = viewModelFactory {
             initializer {
                 PlayerViewModel(
@@ -227,23 +197,20 @@ private fun AuthenticatedStudioApp(
                     localAudioStore = container.localAudioStore,
                     libraryRepository = container.libraryRepository,
                     lyricsRepository = container.lyricsRepository,
-                    parseLrcUseCase = container.parseLrcUseCase,
-                    currentUserId = user.uid
+                    parseLrcUseCase = container.parseLrcUseCase
                 )
             }
         }
     )
 
     val settingsViewModel: SettingsViewModel = viewModel(
-        key = "settings_${user.uid}",
         factory = viewModelFactory {
             initializer {
                 SettingsViewModel(
                     preferencesRepository = container.preferencesRepository,
                     localAudioStore = container.localAudioStore,
                     catalogRepository = container.catalogRepository,
-                    autoMatchAudioFilesUseCase = container.autoMatchAudioFilesUseCase,
-                    currentUserId = user.uid
+                    autoMatchAudioFilesUseCase = container.autoMatchAudioFilesUseCase
                 )
             }
         }
@@ -553,15 +520,13 @@ private fun AuthenticatedStudioApp(
 
                             composable<AppRoute.Settings> {
                                 SettingsScreen(
-                                    currentUser = user,
                                     settingsViewModel = settingsViewModel,
                                     playbackSnapshot = snapshot,
                                     activeEqPreset = activeEqPreset,
                                     onOpenEqualizer = { showSettingsEqSheet = true },
                                     onOpenSleepTimer = { showSettingsSleepSheet = true },
                                     onBulkAutoMatchClick = { bulkAudioLauncher.launch(arrayOf("audio/*")) },
-                                    onReplayIntroClick = { showIntroReplay = true },
-                                    onSignOutClick = onSignOut
+                                    onReplayIntroClick = { showIntroReplay = true }
                                 )
                             }
 
@@ -632,7 +597,7 @@ private fun AuthenticatedStudioApp(
                     isLiked = likedIds.contains(snapshot.currentTrack?.id),
                     preferences = preferences,
                     onToggleLike = libraryViewModel::toggleLike,
-                    onSaveEqToCloud = settingsViewModel::saveEqualizerSettings,
+                    onSaveEqSettings = settingsViewModel::saveEqualizerSettings,
                     onMinimize = playerViewModel::minimizePlayer
                 )
             }

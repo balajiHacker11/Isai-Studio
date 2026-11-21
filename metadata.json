@@ -1,6 +1,6 @@
 {
   "name": "Isai Studio",
-  "description": "Sai Abhyankkar music player with Jetpack Compose, Media3 ExoPlayer, interactive story intro, local MP3/AAC playback, and Firebase sync.",
+  "description": "Sai Abhyankkar music player with Jetpack Compose, Media3 ExoPlayer, interactive story intro, local MP3/AAC playback, and device-local library.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
